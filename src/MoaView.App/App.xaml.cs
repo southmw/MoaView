@@ -15,6 +15,7 @@ using MoaView.Infrastructure.DependencyInjection;
 using MoaView.Infrastructure.Diagnostics;
 using MoaView.Infrastructure.WebView;
 using Serilog;
+using MoaView.App.Resources;
 
 namespace MoaView.App;
 
@@ -109,7 +110,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             logger.LogCritical(ex, "DB 초기화 실패: {Path}", paths.DatabaseFile);
-            MessageBox.Show($"데이터베이스를 열 수 없습니다.\n{paths.DatabaseFile}\n\n{ex.Message}",
+            MessageBox.Show(string.Format(Strings.DbOpenFailed, paths.DatabaseFile, ex.Message),
                 "MoaView", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown();
             return;
@@ -131,7 +132,7 @@ public partial class App : Application
     {
         logger.LogError("WebView2 런타임이 설치되어 있지 않습니다.");
         var install = MessageBox.Show(
-            "MoaView를 실행하려면 Microsoft Edge WebView2 런타임이 필요합니다.\n지금 Microsoft 설치 관리자를 내려받아 설치할까요? (관리자 권한을 요청할 수 있습니다)",
+            Strings.WebView2InstallPrompt,
             "MoaView", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
         if (install == MessageBoxResult.Yes)
@@ -145,7 +146,7 @@ public partial class App : Application
         }
 
         var open = MessageBox.Show(
-            "WebView2 런타임을 설치하지 못했습니다.\nMicrosoft 다운로드 페이지를 열까요? 설치한 뒤 MoaView를 다시 실행하세요.",
+            Strings.WebView2InstallFailed,
             "MoaView", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (open == MessageBoxResult.Yes)
         {
@@ -172,9 +173,9 @@ public partial class App : Application
             }
 
             _errorDialogsShown++;
-            var suffix = _errorDialogsShown == MaxErrorDialogsPerSession ? "\n\n(이후 같은 세션의 오류는 로그에만 기록합니다.)" : string.Empty;
+            var suffix = _errorDialogsShown == MaxErrorDialogsPerSession ? Strings.ErrorDialogSuffix : string.Empty;
             MessageBox.Show(
-                $"예기치 않은 오류가 발생했습니다. 계속 사용할 수 있지만 문제가 반복되면 앱을 다시 시작하세요.\n\n{args.Exception.GetType().Name}: {args.Exception.Message}\n\n로그: {paths.LogsFolder}{suffix}",
+                string.Format(Strings.UnhandledErrorMessage, args.Exception.GetType().Name, args.Exception.Message, paths.LogsFolder, suffix),
                 "MoaView", MessageBoxButton.OK, MessageBoxImage.Warning);
         };
 
@@ -188,7 +189,7 @@ public partial class App : Application
             if (args.IsTerminating)
             {
                 MessageBox.Show(
-                    $"MoaView가 복구할 수 없는 오류로 종료됩니다.\n\n{exception.GetType().Name}: {exception.Message}\n\n크래시 로그: {report ?? paths.LogsFolder}",
+                    string.Format(Strings.FatalErrorMessage, exception.GetType().Name, exception.Message, report ?? paths.LogsFolder),
                     "MoaView", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         };

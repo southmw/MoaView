@@ -5,6 +5,7 @@ using MoaView.Core.Abstractions;
 using MoaView.Core.Entities;
 using MoaView.Core.Models;
 using MoaView.Infrastructure.Configuration;
+using MoaView.App.Resources;
 
 namespace MoaView.App.Services;
 
@@ -154,17 +155,17 @@ public sealed class LoginAssistService(
                 logger.LogInformation("[{Service}] 자동 제출 안 함: {Verdict}", service.Code, verdict);
                 if (verdict != LoginGuard.Verdict.AutoSubmitDisabled)
                 {
-                    Raise(new LoginNotice("자동 제출을 잠시 멈췄습니다",
+                    Raise(new LoginNotice(Strings.AutoSubmitPausedTitle,
                         verdict == LoginGuard.Verdict.TooManyFailures
-                            ? "자동 로그인이 연속으로 실패해 자동 제출을 껐습니다. 비밀번호를 확인해 주세요."
-                            : "최근에 자동 제출을 시도해서 잠시 기다립니다. 로그인 버튼을 직접 눌러 주세요.",
-                        "계정 수정", () => accountsDialog.ShowAsync(service)));
+                            ? Strings.AutoSubmitDisabledMessage
+                            : Strings.AutoSubmitCooldownMessage,
+                        Strings.EditAccount, () => accountsDialog.ShowAsync(service)));
                 }
                 else
                 {
-                    Raise(new LoginNotice("로그인이 끊겨서 저장된 계정으로 입력했습니다",
-                        "로그인 버튼을 눌러 주세요. 자동 제출은 계정 설정에서 켤 수 있습니다.",
-                        "계정 관리", () => accountsDialog.ShowAsync(service)));
+                    Raise(new LoginNotice(Strings.AutoFilledTitle,
+                        Strings.AutoFilledMessage,
+                        Strings.ManageAccounts, () => accountsDialog.ShowAsync(service)));
                 }
 
                 return;
@@ -190,9 +191,9 @@ public sealed class LoginAssistService(
             {
                 logger.LogWarning("[{Service}] 자동 로그인 실패 (연속 {Count}회{Disabled})",
                     service.Code, account.LoginFailCount, disabled ? ", 자동 제출 끔" : string.Empty);
-                Raise(new LoginNotice("자동 로그인에 실패했습니다",
-                    disabled ? "연속 실패로 자동 제출을 껐습니다. 비밀번호를 확인해 주세요." : "비밀번호를 확인해 주세요.",
-                    "계정 수정", () => accountsDialog.ShowAsync(service)));
+                Raise(new LoginNotice(Strings.AutoLoginFailedTitle,
+                    disabled ? Strings.AutoLoginFailedDisabled : Strings.CheckPassword,
+                    Strings.EditAccount, () => accountsDialog.ShowAsync(service)));
             }
         }
         catch (Exception ex)
@@ -214,10 +215,10 @@ public sealed class LoginAssistService(
             return;
         }
 
-        Raise(new LoginNotice("이 서비스의 계정을 저장하면 다음부터 자동으로 입력합니다",
-            $"{service.Name} 로그인 정보는 이 PC에만 암호화되어 저장됩니다.",
-            "계정 저장", () => accountsDialog.ShowAsync(service),
-            "다시 보지 않기", () =>
+        Raise(new LoginNotice(Strings.SaveAccountPromptTitle,
+            string.Format(Strings.SaveAccountPromptMessage, service.Name),
+            Strings.SaveAccount, () => accountsDialog.ShowAsync(service),
+            Strings.DontShowAgain, () =>
             {
                 _noAccountDismissed.Add(service.Code);
                 return Task.CompletedTask;
@@ -424,8 +425,8 @@ public sealed class LoginAssistService(
             {
                 // 이미 보냈는데 사용자가 로그인하지 않고 돌아온 것. 강제로 다시 보내지 않고 배너로만 알린다(반복 이동 방지).
                 logger.LogInformation("[{Service}] 로그아웃 상태(재감지). 배너로 안내", service.Code);
-                Raise(new LoginNotice("로그아웃 상태입니다", $"{service.Name}에 저장된 계정으로 로그인할 수 있습니다.",
-                    "로그인", () =>
+                Raise(new LoginNotice(Strings.LoggedOutStateTitle, string.Format(Strings.LoggedOutStateMessage, service.Name),
+                    Strings.Login, () =>
                     {
                         host.Navigate(loginUrl);
                         return Task.CompletedTask;

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MoaView.App.Views;
 using MoaView.Core.Abstractions;
 using MoaView.Core.Entities;
+using MoaView.App.Resources;
 
 namespace MoaView.App.ViewModels;
 
@@ -18,7 +19,7 @@ public sealed partial class AccountsViewModel(
 {
     public StreamingService Service { get; } = service;
 
-    public string Title => $"{Service.Name} 계정 관리";
+    public string Title => string.Format(Strings.AccountsWindowTitle, Service.Name);
 
     public ObservableCollection<AccountItemViewModel> Accounts { get; } = [];
 
@@ -46,7 +47,7 @@ public sealed partial class AccountsViewModel(
         var draft = new Account
         {
             ServiceId = Service.Id,
-            DisplayName = "내 계정",
+            DisplayName = Strings.MyAccount,
             LoginId = string.Empty,
             LoginProvider = primaryLoginProvider,
             ProfileName = NextProfileName(),
@@ -92,7 +93,7 @@ public sealed partial class AccountsViewModel(
 
         await repository.DeleteAsync(item.Account.Id);
         logger.LogInformation("[{Service}] 계정 삭제: {Id}", Service.Code, item.Account.Id);
-        Status = $"'{item.DisplayName}' 계정을 삭제했습니다.";
+        Status = string.Format(Strings.AccountDeleted, item.DisplayName);
         await LoadAsync();
     }
 
@@ -128,7 +129,7 @@ public sealed partial class AccountsViewModel(
         await repository.SaveAsync(account);
         logger.LogInformation("[{Service}] 계정 저장: Id={Id}, 기본={Default}, 자동입력={Fill}, 자동제출={Submit}",
             Service.Code, account.Id, account.IsDefault, account.AutoFillEnabled, account.AutoSubmitEnabled);
-        Status = $"'{account.DisplayName}' 계정을 저장했습니다.";
+        Status = string.Format(Strings.AccountSaved, account.DisplayName);
         await LoadAsync();
         Selected = Accounts.FirstOrDefault(a => a.Account.Id == account.Id);
     }
@@ -148,12 +149,12 @@ public sealed class AccountItemViewModel(Account account)
 
     public string LoginProviderText => Account.LoginProvider switch
     {
-        LoginProviders.Native => "서비스 ID",
-        LoginProviders.Naver => "네이버",
-        LoginProviders.Kakao => "카카오",
+        LoginProviders.Native => Strings.ProviderNative,
+        LoginProviders.Naver => Strings.ProviderNaver,
+        LoginProviders.Kakao => Strings.ProviderKakao,
         LoginProviders.CjOne => "CJ ONE",
         LoginProviders.Google => "Google",
-        LoginProviders.TId => "T 아이디",
+        LoginProviders.TId => Strings.ProviderTId,
         var other => other,
     };
 
@@ -162,9 +163,9 @@ public sealed class AccountItemViewModel(Account account)
     public bool HasPassword => Account.EncryptedPassword is { Length: > 0 };
 
     public string AutoText =>
-        !Account.AutoFillEnabled ? "꺼짐" : Account.AutoSubmitEnabled ? "입력 + 제출" : "입력만";
+        !Account.AutoFillEnabled ? Strings.AutoOff : Account.AutoSubmitEnabled ? Strings.AutoFillAndSubmit : Strings.AutoFillOnly;
 
     public string LastLoginText => Account.LastLoginAt is { } t ? t.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "-";
 
-    public string FailText => Account.LoginFailCount > 0 ? $"{Account.LoginFailCount}회" : "-";
+    public string FailText => Account.LoginFailCount > 0 ? string.Format(Strings.FailCountFormat, Account.LoginFailCount) : "-";
 }

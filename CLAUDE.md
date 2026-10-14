@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 상태
 
-MoaView(구 MyOTTPlayer, 2026-10-13 개명)는 Netflix, TVING, Wavve, YouTube, 치지직을 하나의 Windows 데스크톱 앱에서 전환하며 시청하는 "통합 브라우저 셸"입니다. **Phase 0(PoC)은 2026-10-13에 Go 판정, Phase 1(MVP 셸)·Phase 2(데이터·계정)는 구현 완료(실사용 검증 일부 남음), Phase 3(품질·편의)은 진행 중입니다.** Phase 3에서 완료한 것은 Suspend/LRU, 미니 플레이어, PiP, 배율 저장, 개명·아이콘, 설정 화면(2026-10-14: 일반·서비스·계정·재생·단축키·데이터·정보 탭), 사용자 정의 서비스 추가·수정·삭제, 사이드바 정렬(위/아래 버튼)·활성화 토글, 다크/라이트/시스템 테마, 파비콘 캐시, 미니 창 위치·크기 저장이고, Phase 3에 남은 것은 Could 항목(드래그 정렬, DB 복원 UI, 다중 계정)뿐입니다. 다음은 사용자 실측(Phase 1·2 검증 항목)과 Phase 4(배포·안정화)입니다. 진행 상황은 [Doc/07_개발_계획.md](Doc/07_개발_계획.md) 체크리스트, PoC에서 확인된 사실은 [Doc/09_PoC_결과.md](Doc/09_PoC_결과.md)에 있습니다.
+MoaView(구 MyOTTPlayer, 2026-10-13 개명)는 Netflix, TVING, Wavve, YouTube, 치지직을 하나의 Windows 데스크톱 앱에서 전환하며 시청하는 "통합 브라우저 셸"입니다. **Phase 0(PoC)은 2026-10-13에 Go 판정, Phase 1(MVP 셸)·Phase 2(데이터·계정)는 구현 완료(실사용 검증 일부 남음), Phase 3(품질·편의)은 진행 중입니다.** Phase 3에서 완료한 것은 Suspend/LRU, 미니 플레이어, PiP, 배율 저장, 개명·아이콘, 설정 화면(2026-10-14: 일반·서비스·계정·재생·단축키·데이터·정보 탭), 사용자 정의 서비스 추가·수정·삭제, 사이드바 정렬(위/아래 버튼)·활성화 토글, 다크/라이트/시스템 테마, 파비콘 캐시, 미니 창 위치·크기 저장이고, Phase 3에 남은 것은 Could 항목(드래그 정렬, DB 복원 UI, 다중 계정)뿐입니다. Phase 4(배포·안정화)는 2026-10-14에 중복 실행 방지, 크래시 로그, WebView2 부트스트래퍼, Velopack 패키징·자동 업데이트, MIT 라이선스·THIRD-PARTY-NOTICES, `.resx` 분리, 사용자 가이드까지 끝났고, 남은 것은 첫 릴리스 태그(v0.1.0) 푸시와 설치·업데이트 실측, DPI·다중 모니터·장시간 재생 테스트, 그리고 사용자 실측이 필요한 Phase 1·2 검증 항목입니다. 저장소는 https://github.com/southmw/MoaView (main 브랜치). 진행 상황은 [Doc/07_개발_계획.md](Doc/07_개발_계획.md) 체크리스트, PoC에서 확인된 사실은 [Doc/09_PoC_결과.md](Doc/09_PoC_결과.md)에 있습니다.
 
 설계가 바뀌면 코드와 함께 `Doc/` 문서를 갱신합니다. 문서는 번호 접두사를 붙인 한국어 마크다운입니다.
 
@@ -38,6 +38,8 @@ PoC에서 확정된 기술 사항: `WebView2CompositionControl`을 쓰려면 TFM
 ```text
 src/MoaView.slnx, src/Directory.Build.props   솔루션과 공통 빌드 속성
 tools/icon/                      앱 아이콘 생성 스크립트(GDI+ 렌더 + ICO 조립). 아이콘을 바꿀 때만 사용
+tools/resx/                      UI 문자열 리소스 도구(gen_designer.py는 평소에도 사용, extract/apply는 최초 분리용)
+tools/release/pack.ps1           Velopack 패키징(로컬). CI는 .github/workflows/release.yml
 src/MoaView.App/             WPF 실행 프로젝트(net10.0-windows10.0.19041.0, AssemblyName MoaView, 아이콘 Assets/moaview.ico)
   Program.cs                     진입점(csproj StartupObject). Velopack 훅(VelopackApp.Build().Run())을 WPF보다 먼저 처리한 뒤 App을 띄움
   App.xaml.cs                    중복 실행 방지(SingleInstanceGuard), Generic Host, DI, Serilog, 전역 예외 처리(UI 예외 안내 3회, AppDomain 예외는 logs\crash-*.log), WebView2 런타임 확인(없으면 WebView2Bootstrapper로 설치 시도)
@@ -55,6 +57,7 @@ src/MoaView.App/             WPF 실행 프로젝트(net10.0-windows10.0.19041.0
   Services/LoginAssistService    로그인 페이지 감지 → 자동 입력 → (옵트인) 자동 제출 → 판정. LoginGuard는 Core
   Services/ThemeService          다크(기본)/라이트/시스템 테마(WPF-UI ApplicationThemeManager). App 시작 때 창 생성 전에 적용. XAML의 색은 DynamicResource 브러시를 써야 라이트에서도 맞음
   Services/SettingsDialogService 설정 창 모달 표시. "모든 서비스 데이터 초기화"는 Data.ResetWebViewOnStart 플래그를 세우고 다시 시작(App이 시작 때 WebView2 폴더 삭제)
+  Resources/Strings.resx, Strings.Designer.cs   UI 문자열 리소스(212개)와 생성된 강타입 접근자. tools/resx/README.md 참고
   Scripts/*.js                   포함 리소스. autofill.js(휴리스틱 자동 입력), form-analyze.js(Ctrl+Shift+L 개발용), logged-out-check.js(로그아웃 상태 판정), hover-probe.js(마우스를 올려야 열리는 메뉴 탐침), login-submitted-check.js(제출 표식 확인), drm-probe.js·video-info.js(PoC에서 옮긴 진단, 미사용). 인자는 ScriptLoader가 JSON으로 주입
 src/MoaView.Core/            순수 .NET(net10.0). Entities(StreamingService, Account, AppSetting), Abstractions(저장소·Provider·창 인터페이스), Models(HostPattern, SettingKeys 등)
 src/MoaView.Infrastructure/  Persistence(AppDbContext, Migrations, DbSeeder, DatabaseInitializer, DatabaseMaintenance(VACUUM INTO 백업), Repositories), Security/DpapiCredentialProtector, WebView(WebView2EnvironmentProvider, ExtensionInstaller(미호출)), Providers(서비스별 + Generic + Resolver), Configuration(AppPaths, PlayerOptions, LoginOptions), DependencyInjection
@@ -100,7 +103,7 @@ src/tests/MoaView.Infrastructure.Tests/   Provider 정책, 저장소·Seed(SQLit
 
 - 테스트 계정·개인 경로를 코드나 Seed에 넣지 않습니다. 개발용 계정은 User Secrets.
 - 서비스 브랜드 로고를 앱 리소스에 넣지 않습니다. 실행 중 파비콘을 받아 `icons\{code}.png`에 캐시하고(`FaviconCache`), 없으면 이니셜 아이콘입니다. 서비스 삭제나 홈 URL 변경 시 캐시 파일을 지웁니다.
-- 텔레메트리·원격 로그 없음. UI 문자열은 `.resx`로 분리(1차는 한국어)하고 NuGet 라이선스는 `THIRD-PARTY-NOTICES.md`에 기록(둘 다 미구현, Phase 4 할 일).
+- 텔레메트리·원격 로그 없음. UI 문자열은 `App/Resources/Strings.resx`(한국어 기본)에 두고 XAML은 `{x:Static res:Strings.Key}`, C#은 `Strings.Key`/`string.Format(Strings.Key, …)`로 씁니다. 새 문자열은 resx에 추가한 뒤 `python tools/resx/gen_designer.py`로 `Strings.Designer.cs`를 다시 만듭니다(dotnet CLI는 Designer를 생성하지 않음). 로그·예외 메시지는 리소스로 빼지 않습니다. NuGet 라이선스는 `THIRD-PARTY-NOTICES.md`에 기록합니다.
 
 ## 알려진 제약
 

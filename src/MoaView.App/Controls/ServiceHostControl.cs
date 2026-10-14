@@ -11,6 +11,7 @@ using MoaView.App.Views;
 using MoaView.Core.Abstractions;
 using MoaView.Core.Entities;
 using MoaView.Core.Models;
+using MoaView.App.Resources;
 
 namespace MoaView.App.Controls;
 
@@ -162,7 +163,7 @@ public sealed class ServiceHostControl : UserControl, IDisposable
         catch (Exception ex)
         {
             _logger.LogError(ex, "[{Service}] WebView 초기화 실패", Service.Code);
-            Failed?.Invoke(this, new HostFailedEventArgs(Service, "서비스를 열 수 없습니다", ex.Message, canRetry: true));
+            Failed?.Invoke(this, new HostFailedEventArgs(Service, Strings.ServiceOpenFailed, ex.Message, canRetry: true));
         }
     }
 
@@ -470,7 +471,7 @@ public sealed class ServiceHostControl : UserControl, IDisposable
             }
 
             _logger.LogWarning("[{Service}] 탐색 실패 {Status}: {Url}", Service.Code, e.WebErrorStatus, SanitizeForLog(core.Source));
-            Failed?.Invoke(this, new HostFailedEventArgs(Service, "연결할 수 없습니다",
+            Failed?.Invoke(this, new HostFailedEventArgs(Service, Strings.ConnectionFailed,
                 $"{e.WebErrorStatus} ({SanitizeForLog(core.Source)})", canRetry: true));
             return;
         }
@@ -692,7 +693,7 @@ public sealed class ServiceHostControl : UserControl, IDisposable
             case CoreWebView2ProcessFailedKind.RenderProcessUnresponsive:
             case CoreWebView2ProcessFailedKind.FrameRenderProcessExited:
                 // NFR-07: 해당 서비스만 다시 불러오고 앱은 유지한다.
-                Failed?.Invoke(this, new HostFailedEventArgs(Service, "페이지에 문제가 생겨 다시 불러옵니다",
+                Failed?.Invoke(this, new HostFailedEventArgs(Service, Strings.PageReloadingAfterCrash,
                     e.ProcessFailedKind.ToString(), canRetry: false));
                 _webView.CoreWebView2?.Reload();
                 break;

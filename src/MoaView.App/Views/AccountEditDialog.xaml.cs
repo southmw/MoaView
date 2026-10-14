@@ -1,6 +1,7 @@
 using System.Windows;
 using MoaView.Core.Entities;
 using Wpf.Ui.Controls;
+using MoaView.App.Resources;
 
 namespace MoaView.App.Views;
 
@@ -14,12 +15,12 @@ public partial class AccountEditDialog : FluentWindow
 
     private static readonly (string Code, string Name)[] Providers =
     [
-        (LoginProviders.Native, "서비스 자체 ID"),
-        (LoginProviders.Naver, "네이버 (치지직은 기본)"),
-        (LoginProviders.Google, "Google (YouTube는 기본)"),
-        (LoginProviders.Kakao, "카카오 (순차 지원)"),
-        (LoginProviders.CjOne, "CJ ONE (순차 지원)"),
-        (LoginProviders.TId, "T 아이디 (순차 지원)"),
+        (LoginProviders.Native, Strings.ProviderNativeLong),
+        (LoginProviders.Naver, Strings.ProviderNaverLong),
+        (LoginProviders.Google, Strings.ProviderGoogleLong),
+        (LoginProviders.Kakao, Strings.ProviderKakaoLong),
+        (LoginProviders.CjOne, Strings.ProviderCjOneLong),
+        (LoginProviders.TId, Strings.ProviderTIdLong),
     ];
 
     private readonly Account _account;
@@ -31,7 +32,7 @@ public partial class AccountEditDialog : FluentWindow
         _isNew = isNew;
         InitializeComponent();
 
-        Title = isNew ? "계정 추가" : "계정 수정";
+        Title = isNew ? Strings.AddAccount : Strings.EditAccount;
         TitleBar.Title = Title;
 
         foreach (var (code, name) in Providers)
@@ -45,7 +46,7 @@ public partial class AccountEditDialog : FluentWindow
         IsDefaultBox.IsChecked = account.IsDefault;
         AutoFillBox.IsChecked = account.AutoFillEnabled;
         AutoSubmitBox.IsChecked = account.AutoSubmitEnabled;
-        PasswordLabel.Text = isNew || account.EncryptedPassword is null ? "비밀번호" : "비밀번호 (비워 두면 유지)";
+        PasswordLabel.Text = isNew || account.EncryptedPassword is null ? Strings.Password : Strings.PasswordKeepHint;
     }
 
     /// <summary>저장을 누르면 account를 갱신하고 새 비밀번호(없으면 null)를 돌려준다. 취소면 null.</summary>
@@ -65,13 +66,13 @@ public partial class AccountEditDialog : FluentWindow
 
         if (displayName.Length == 0 || loginId.Length == 0)
         {
-            ShowError("표시 이름과 아이디를 입력하세요.");
+            ShowError(Strings.AccountValidationRequired);
             return;
         }
 
         if (_isNew && password.Length == 0 && AutoFillBox.IsChecked == true)
         {
-            ShowError("자동 입력을 쓰려면 비밀번호가 필요합니다. 세션만 유지하려면 자동 입력을 끄세요.");
+            ShowError(Strings.AccountValidationPassword);
             return;
         }
 

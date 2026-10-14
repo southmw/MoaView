@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using MoaView.Core.Entities;
 using Wpf.Ui.Controls;
+using MoaView.App.Resources;
 
 namespace MoaView.App.Views;
 
@@ -23,7 +24,7 @@ public partial class ServiceEditDialog : FluentWindow
         _service = service;
         InitializeComponent();
 
-        Title = isNew ? "서비스 추가" : $"서비스 수정 - {service.Name}";
+        Title = isNew ? Strings.AddService : string.Format(Strings.EditServiceTitle, service.Name);
         TitleBar.Title = Title;
 
         NameBox.Text = service.Name;
@@ -35,12 +36,12 @@ public partial class ServiceEditDialog : FluentWindow
 
         if (service.IsBuiltIn)
         {
-            NoteText.Text = $"기본 제공 서비스({service.Code})는 삭제할 수 없고 숨길 수만 있습니다. 고급 항목을 비워 두면 앱에 내장된 기본값을 씁니다.";
-            DefaultsHint.Text = "비워 두면 이 서비스 전용 Provider의 기본 로그인 URL·패턴·허용 호스트를 씁니다.";
+            NoteText.Text = string.Format(Strings.BuiltInServiceNote, service.Code);
+            DefaultsHint.Text = Strings.BuiltInDefaultsHint;
         }
         else
         {
-            DefaultsHint.Text = "비워 두면 홈 URL의 호스트와 하위 도메인만 앱 안에서 열고, 그 밖의 링크는 기본 브라우저로 넘깁니다.";
+            DefaultsHint.Text = Strings.CustomDefaultsHint;
             AdvancedExpander.IsExpanded = !isNew && (service.LoginUrl is not null || service.AllowedHosts.Count > 0);
         }
 
@@ -70,25 +71,25 @@ public partial class ServiceEditDialog : FluentWindow
 
         if (name.Length == 0)
         {
-            ShowError("이름을 입력하세요.");
+            ShowError(Strings.ServiceNameRequired);
             return;
         }
 
         if (!IsHttpUrl(homeUrl))
         {
-            ShowError("홈 URL은 http:// 또는 https://로 시작하는 전체 주소여야 합니다.");
+            ShowError(Strings.HomeUrlInvalid);
             return;
         }
 
         if (color.Length > 0 && !ColorRegex.IsMatch(color))
         {
-            ShowError("강조 색은 #RRGGBB 형식이어야 합니다(예: #3B82F6).");
+            ShowError(Strings.AccentColorInvalid);
             return;
         }
 
         if (loginUrl.Length > 0 && !IsHttpUrl(loginUrl))
         {
-            ShowError("로그인 페이지 URL은 http:// 또는 https://로 시작하는 전체 주소여야 합니다.");
+            ShowError(Strings.LoginUrlInvalid);
             return;
         }
 
@@ -100,7 +101,7 @@ public partial class ServiceEditDialog : FluentWindow
             }
             catch (ArgumentException ex)
             {
-                ShowError($"로그인 URL 정규식이 잘못되었습니다: {ex.Message}");
+                ShowError(string.Format(Strings.LoginPatternInvalid, ex.Message));
                 return;
             }
         }
@@ -108,7 +109,7 @@ public partial class ServiceEditDialog : FluentWindow
         var badHost = hosts.FirstOrDefault(h => !HostRegex.IsMatch(h));
         if (badHost is not null)
         {
-            ShowError($"허용 호스트 형식이 잘못되었습니다: {badHost} (예: *.example.com 또는 www.example.com)");
+            ShowError(string.Format(Strings.AllowedHostInvalid, badHost));
             return;
         }
 

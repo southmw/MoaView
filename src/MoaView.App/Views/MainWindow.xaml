@@ -1,6 +1,7 @@
 <ui:FluentWindow x:Class="MoaView.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="clr-namespace:MoaView.App.Resources"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:vm="clr-namespace:MoaView.App.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -75,13 +76,13 @@
                 <!-- 우클릭 메뉴(06 UI/UX 2.1절). ContextMenu는 PlacementTarget의 DataContext(항목)를 물려받는다. -->
                 <Button.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="계정 관리..." Command="{Binding Owner.ManageAccountsCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="서비스 편집..." Command="{Binding Owner.EditServiceCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="{x:Static res:Strings.MenuManageAccounts}" Command="{Binding Owner.ManageAccountsCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="{x:Static res:Strings.MenuEditService}" Command="{Binding Owner.EditServiceCommand}" CommandParameter="{Binding}" />
                         <Separator />
-                        <MenuItem Header="홈으로" Command="{Binding Owner.GoHomeOfCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="새로고침" Command="{Binding Owner.ReloadOfCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="{x:Static res:Strings.MenuGoHome}" Command="{Binding Owner.GoHomeOfCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="{x:Static res:Strings.Refresh}" Command="{Binding Owner.ReloadOfCommand}" CommandParameter="{Binding}" />
                         <Separator />
-                        <MenuItem Header="로그아웃 (쿠키 삭제)" Command="{Binding Owner.LogoutCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="{x:Static res:Strings.MenuLogout}" Command="{Binding Owner.LogoutCommand}" CommandParameter="{Binding}" />
                     </ContextMenu>
                 </Button.ContextMenu>
                 <Grid>
@@ -146,7 +147,7 @@
 
         <!-- 미니 플레이어 바(06 UI/UX 2.3절): 드래그로 이동, 더블클릭으로 복귀, Esc/Ctrl+M으로도 복귀 -->
         <Border Grid.Row="1" Height="10" Background="{DynamicResource SystemAccentColorPrimaryBrush}" Cursor="SizeAll"
-                ToolTip="드래그: 이동 / 더블클릭 또는 Esc: 원래 크기로"
+                ToolTip="{x:Static res:Strings.MiniBarTooltip}"
                 Visibility="{Binding IsMini, Converter={StaticResource BoolToVisibility}}"
                 MouseLeftButtonDown="OnMiniBarMouseDown" />
 
@@ -174,7 +175,7 @@
                     <!-- 펼치기/접기 -->
                     <Button DockPanel.Dock="Top" Style="{StaticResource SidebarItemButton}" Height="44"
                             Command="{Binding ToggleSidebarCommand}"
-                            ToolTip="사이드바 펼치기/접기 (Ctrl+B)" AutomationProperties.Name="사이드바 펼치기/접기">
+                            ToolTip="{x:Static res:Strings.SidebarToggleTooltip}" AutomationProperties.Name="{x:Static res:Strings.SidebarToggle}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="4" />
@@ -193,7 +194,7 @@
 
                         <Button Style="{StaticResource SidebarItemButton}" Height="44"
                                 Command="{Binding ToggleMiniCommand}"
-                                ToolTip="미니 플레이어 (Ctrl+M)" AutomationProperties.Name="미니 플레이어">
+                                ToolTip="{x:Static res:Strings.MiniPlayerTooltip}" AutomationProperties.Name="{x:Static res:Strings.MiniPlayer}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="4" />
@@ -203,14 +204,14 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="1" Symbol="PictureInPicture24" FontSize="20"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="미니 플레이어" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="{x:Static res:Strings.MiniPlayer}" />
                                 <TextBlock Grid.Column="3" Style="{StaticResource SidebarHint}" Text="Ctrl+M" />
                             </Grid>
                         </Button>
 
                         <Button Style="{StaticResource SidebarItemButton}" Height="44"
                                 Command="{Binding ToggleFullScreenCommand}"
-                                ToolTip="전체화면 (F11)" AutomationProperties.Name="전체화면">
+                                ToolTip="{x:Static res:Strings.FullScreenTooltip}" AutomationProperties.Name="{x:Static res:Strings.FullScreen}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="4" />
@@ -220,14 +221,14 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="1" Symbol="FullScreenMaximize24" FontSize="20"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="전체화면" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="{x:Static res:Strings.FullScreen}" />
                                 <TextBlock Grid.Column="3" Style="{StaticResource SidebarHint}" Text="F11" />
                             </Grid>
                         </Button>
 
                         <Button Style="{StaticResource SidebarItemButton}" Height="44"
                                 Command="{Binding AddServiceCommand}"
-                                ToolTip="서비스 추가" AutomationProperties.Name="서비스 추가">
+                                ToolTip="{x:Static res:Strings.AddService}" AutomationProperties.Name="{x:Static res:Strings.AddService}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="4" />
@@ -236,13 +237,13 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="1" Symbol="Add24" FontSize="20"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="서비스 추가" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="{x:Static res:Strings.AddService}" />
                             </Grid>
                         </Button>
 
                         <Button Style="{StaticResource SidebarItemButton}" Height="44"
                                 Command="{Binding OpenSettingsCommand}"
-                                ToolTip="설정 (Ctrl+,)" AutomationProperties.Name="설정">
+                                ToolTip="{x:Static res:Strings.SettingsTooltip}" AutomationProperties.Name="{x:Static res:Strings.Settings}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="4" />
@@ -252,7 +253,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ui:SymbolIcon Grid.Column="1" Symbol="Settings24" FontSize="20"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="설정" />
+                                <TextBlock Grid.Column="2" Style="{StaticResource SidebarLabel}" Text="{x:Static res:Strings.Settings}" />
                                 <TextBlock Grid.Column="3" Style="{StaticResource SidebarHint}" Text="Ctrl+," />
                             </Grid>
                         </Button>
@@ -277,7 +278,7 @@
                         Visibility="{Binding IsBannerOpen, Converter={StaticResource BoolToVisibility}}">
                     <DockPanel>
                         <ui:Button DockPanel.Dock="Right" Command="{Binding CloseBannerCommand}" Appearance="Secondary"
-                                   Padding="8,4" ToolTip="닫기" AutomationProperties.Name="알림 닫기">
+                                   Padding="8,4" ToolTip="{x:Static res:Strings.Close}" AutomationProperties.Name="{x:Static res:Strings.CloseNotification}">
                             <ui:SymbolIcon Symbol="Dismiss24" />
                         </ui:Button>
                         <ui:Button DockPanel.Dock="Right" Command="{Binding BannerSecondaryActionCommand}" Content="{Binding BannerSecondaryText}"

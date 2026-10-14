@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Web.WebView2.Core;
 using Wpf.Ui.Controls;
+using MoaView.App.Resources;
 
 namespace MoaView.App.Views;
 
@@ -57,7 +58,7 @@ public partial class OAuthPopupWindow : FluentWindow
 
         core.DocumentTitleChanged += (_, _) =>
         {
-            Title = string.IsNullOrWhiteSpace(core.DocumentTitle) ? "로그인" : core.DocumentTitle;
+            Title = string.IsNullOrWhiteSpace(core.DocumentTitle) ? Strings.Login : core.DocumentTitle;
             TitleBar.Title = Title;
         };
         core.WindowCloseRequested += (_, _) => Close();

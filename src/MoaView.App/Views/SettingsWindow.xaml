@@ -1,6 +1,7 @@
 <ui:FluentWindow x:Class="MoaView.App.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:res="clr-namespace:MoaView.App.Resources"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:vm="clr-namespace:MoaView.App.ViewModels"
         xmlns:conv="clr-namespace:MoaView.App.Converters"
@@ -8,7 +9,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:SettingsViewModel}"
-        Title="설정"
+        Title="{x:Static res:Strings.Settings}"
         Width="920" Height="600"
         MinWidth="760" MinHeight="460"
         WindowStartupLocation="CenterOwner"
@@ -43,7 +44,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="설정" ShowMaximize="False" ShowMinimize="False" />
+        <ui:TitleBar Grid.Row="0" Title="{x:Static res:Strings.Settings}" ShowMaximize="False" ShowMinimize="False" />
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -53,7 +54,7 @@
 
             <!-- 왼쪽 탭 목록(06 UI/UX 3절) -->
             <ListBox Grid.Column="0" Margin="12,8,0,12" ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}"
-                     BorderThickness="0" Background="Transparent" AutomationProperties.Name="설정 탭">
+                     BorderThickness="0" Background="Transparent" AutomationProperties.Name="{x:Static res:Strings.SettingsTabs}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}" FontSize="14" Margin="8,6" />
@@ -65,29 +66,29 @@
                 <Grid>
                     <!-- 0. 일반 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=0}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="일반" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.General}" />
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="시작 서비스" />
-                        <RadioButton Content="마지막으로 보던 서비스" IsChecked="{Binding StartWithLast}" GroupName="Startup" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.StartupService}" />
+                        <RadioButton Content="{x:Static res:Strings.StartWithLast}" IsChecked="{Binding StartWithLast}" GroupName="Startup" />
                         <DockPanel Margin="0,4,0,0">
-                            <RadioButton DockPanel.Dock="Left" Content="항상 이 서비스:" IsChecked="{Binding StartWithFixed}" GroupName="Startup" VerticalAlignment="Center" />
+                            <RadioButton DockPanel.Dock="Left" Content="{x:Static res:Strings.StartWithFixed}" IsChecked="{Binding StartWithFixed}" GroupName="Startup" VerticalAlignment="Center" />
                             <ComboBox Margin="8,0,0,0" Width="220" HorizontalAlignment="Left"
                                       ItemsSource="{Binding StartupCandidates}" SelectedItem="{Binding StartupService}"
                                       IsEnabled="{Binding StartWithFixed}" />
                         </DockPanel>
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="테마" />
-                        <ComboBox Width="220" HorizontalAlignment="Left" ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme}" AutomationProperties.Name="테마" />
-                        <TextBlock Style="{StaticResource Hint}" Text="영상 시청에는 다크 테마를 권장합니다. 웹 페이지 자체의 색은 각 서비스가 정합니다." />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.Theme}" />
+                        <ComboBox Width="220" HorizontalAlignment="Left" ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme}" AutomationProperties.Name="{x:Static res:Strings.Theme}" />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.ThemeHint}" />
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="창" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.WindowSection}" />
                         <!-- 트레이 상주(FR-NAV-05)는 Could이고 개발 계획에 없어 항목을 두지 않는다. 중복 실행 방지는 항상 켜져 있어 옵션이 없다. -->
-                        <TextBlock Style="{StaticResource Hint}" Margin="0" Text="앱은 한 번에 하나만 실행됩니다. 다시 실행하면 열려 있는 창을 앞으로 가져옵니다. 오류가 나면 로그 폴더에 기록되고, 복구할 수 없는 오류는 crash-*.log로 따로 남습니다." />
+                        <TextBlock Style="{StaticResource Hint}" Margin="0" Text="{x:Static res:Strings.SingleInstanceHint}" />
                     </StackPanel>
 
                     <!-- 1. 서비스 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=1}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="서비스 관리" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.ServiceManagement}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -95,28 +96,28 @@
                             </Grid.ColumnDefinitions>
 
                             <ui:ListView Grid.Column="0" MinHeight="240" ItemsSource="{Binding Services}" SelectedItem="{Binding SelectedService}"
-                                         SelectionMode="Single" AutomationProperties.Name="서비스 목록">
+                                         SelectionMode="Single" AutomationProperties.Name="{x:Static res:Strings.ServiceList}">
                                 <ui:ListView.View>
                                     <ui:GridView>
                                         <ui:GridViewColumn Header="#" Width="34" DisplayMemberBinding="{Binding Order}" />
-                                        <ui:GridViewColumn Header="이름" Width="100" DisplayMemberBinding="{Binding Name}" />
-                                        <ui:GridViewColumn Header="주소" Width="140" DisplayMemberBinding="{Binding Host}" />
-                                        <ui:GridViewColumn Header="표시" Width="56">
+                                        <ui:GridViewColumn Header="{x:Static res:Strings.Name}" Width="100" DisplayMemberBinding="{Binding Name}" />
+                                        <ui:GridViewColumn Header="{x:Static res:Strings.Address}" Width="140" DisplayMemberBinding="{Binding Host}" />
+                                        <ui:GridViewColumn Header="{x:Static res:Strings.Show}" Width="56">
                                             <ui:GridViewColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" ToolTip="사이드바에 표시" />
+                                                    <CheckBox IsChecked="{Binding IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" ToolTip="{x:Static res:Strings.ShowInSidebar}" />
                                                 </DataTemplate>
                                             </ui:GridViewColumn.CellTemplate>
                                         </ui:GridViewColumn>
-                                        <ui:GridViewColumn Header="전환 시 일시정지" Width="118">
+                                        <ui:GridViewColumn Header="{x:Static res:Strings.PauseOnSwitch}" Width="118">
                                             <ui:GridViewColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <CheckBox IsChecked="{Binding PauseOnSwitch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" />
                                                 </DataTemplate>
                                             </ui:GridViewColumn.CellTemplate>
                                         </ui:GridViewColumn>
-                                        <ui:GridViewColumn Header="배율" Width="54" DisplayMemberBinding="{Binding ZoomText}" />
-                                        <ui:GridViewColumn Header="종류" Width="54" DisplayMemberBinding="{Binding KindText}" />
+                                        <ui:GridViewColumn Header="{x:Static res:Strings.Zoom}" Width="54" DisplayMemberBinding="{Binding ZoomText}" />
+                                        <ui:GridViewColumn Header="{x:Static res:Strings.Kind}" Width="54" DisplayMemberBinding="{Binding KindText}" />
                                     </ui:GridView>
                                 </ui:ListView.View>
                             </ui:ListView>
@@ -128,28 +129,28 @@
                                         <Setter Property="HorizontalAlignment" Value="Stretch" />
                                     </Style>
                                 </StackPanel.Resources>
-                                <ui:Button Content="추가..." Command="{Binding AddServiceCommand}" Appearance="Primary" />
-                                <ui:Button Content="수정..." Command="{Binding EditServiceCommand}" />
-                                <ui:Button Content="삭제" Command="{Binding DeleteServiceCommand}" Appearance="Danger" />
+                                <ui:Button Content="{x:Static res:Strings.AddEllipsis}" Command="{Binding AddServiceCommand}" Appearance="Primary" />
+                                <ui:Button Content="{x:Static res:Strings.EditEllipsis}" Command="{Binding EditServiceCommand}" />
+                                <ui:Button Content="{x:Static res:Strings.Delete}" Command="{Binding DeleteServiceCommand}" Appearance="Danger" />
                                 <Separator Margin="0,4,0,12" />
-                                <ui:Button Content="위로" Command="{Binding MoveUpCommand}" Icon="{ui:SymbolIcon ArrowUp24}" />
-                                <ui:Button Content="아래로" Command="{Binding MoveDownCommand}" Icon="{ui:SymbolIcon ArrowDown24}" />
+                                <ui:Button Content="{x:Static res:Strings.MoveUp}" Command="{Binding MoveUpCommand}" Icon="{ui:SymbolIcon ArrowUp24}" />
+                                <ui:Button Content="{x:Static res:Strings.MoveDown}" Command="{Binding MoveDownCommand}" Icon="{ui:SymbolIcon ArrowDown24}" />
                             </StackPanel>
                         </Grid>
                         <TextBlock Text="{Binding ServiceStatus}" FontSize="12" Margin="0,8,0,0" />
                         <TextBlock Style="{StaticResource Hint}"
-                                   Text="기본 제공 서비스는 삭제할 수 없고 '표시'를 끄면 사이드바에서 숨겨집니다. 배율은 Ctrl + / Ctrl - 로 바꾸면 서비스별로 저장됩니다. 순서는 사이드바와 Ctrl+1~9 단축키에 그대로 쓰입니다." />
+                                   Text="{x:Static res:Strings.ServicesHint}" />
                     </StackPanel>
 
                     <!-- 2. 계정 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=2}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="계정" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.Account}" />
                         <ItemsControl ItemsSource="{Binding AccountSummaries}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:AccountSummaryViewModel}">
                                     <Border Padding="12,8" Margin="0,0,0,6" CornerRadius="6" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
                                         <DockPanel>
-                                            <ui:Button DockPanel.Dock="Right" Content="관리..." VerticalAlignment="Center"
+                                            <ui:Button DockPanel.Dock="Right" Content="{x:Static res:Strings.ManageEllipsis}" VerticalAlignment="Center"
                                                        Command="{Binding DataContext.ManageAccountsCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                        CommandParameter="{Binding}" />
                                             <StackPanel VerticalAlignment="Center">
@@ -162,30 +163,30 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Style="{StaticResource Hint}"
-                                   Text="비밀번호는 Windows 계정으로 암호화되어 이 PC에만 저장됩니다. 자동 제출은 계정별 옵션이며 연속 2회 실패하면 자동으로 꺼집니다. 서비스 아이콘을 우클릭해도 같은 창이 열립니다." />
+                                   Text="{x:Static res:Strings.AccountsTabHint}" />
                     </StackPanel>
 
                     <!-- 3. 재생 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=3}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="재생·자원" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.PlaybackResources}" />
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="보지 않는 서비스를 절전(Suspend)하기까지 기다리는 시간 (초, 0이면 안 함)" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.SuspendAfterLabel}" />
                         <ui:NumberBox Width="200" HorizontalAlignment="Left" Minimum="0" Maximum="86400" SmallChange="30" LargeChange="300" MaxDecimalPlaces="0"
                                       SpinButtonPlacementMode="Inline" Value="{Binding SuspendAfterSeconds, Mode=TwoWay}" />
-                        <TextBlock Style="{StaticResource Hint}" Text="DRM 재생 중인 서비스 하나가 약 1 GB를 쓰므로 절전은 켜 두는 것이 좋습니다. 절전된 서비스는 다시 선택하면 바로 깨어납니다." />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.SuspendHint}" />
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="동시에 살려 둘 서비스 수 (초과하면 가장 오래 안 본 것부터 닫음)" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.MaxAliveLabel}" />
                         <ui:NumberBox Width="200" HorizontalAlignment="Left" Minimum="1" Maximum="10" SmallChange="1" MaxDecimalPlaces="0"
                                       SpinButtonPlacementMode="Inline" Value="{Binding MaxAliveHosts, Mode=TwoWay}" />
-                        <TextBlock Style="{StaticResource Hint}" Text="닫힌 서비스는 다시 열면 마지막으로 보던 페이지에서 이어집니다. 전환 시 일시정지는 서비스 탭에서 서비스별로 설정합니다." />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.MaxAliveHint}" />
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="미니 플레이어" />
-                        <TextBlock Style="{StaticResource Hint}" Margin="0" Text="Ctrl+M으로 480×280 항상 위 창이 됩니다. 창 모서리로 크기를 바꿀 수 있고, 해제할 때 위치·크기를 저장해 다음에 그대로 엽니다." />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.MiniPlayer}" />
+                        <TextBlock Style="{StaticResource Hint}" Margin="0" Text="{x:Static res:Strings.MiniPlayerHint}" />
                     </StackPanel>
 
                     <!-- 4. 단축키 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=4}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="단축키" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.Shortcuts}" />
                         <ItemsControl ItemsSource="{Binding Shortcuts}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type vm:ShortcutRow}">
@@ -200,31 +201,31 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <TextBlock Style="{StaticResource Hint}" Text="Space·화살표처럼 플레이어가 쓰는 키는 앱이 가로채지 않고 웹 페이지로 넘깁니다. 단축키 변경은 지원하지 않습니다." />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.ShortcutsHint}" />
                     </StackPanel>
 
                     <!-- 5. 데이터 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=5}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="데이터" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.Data}" />
                         <TextBlock Text="{Binding DataFolder}" FontSize="12" Opacity="0.8" />
-                        <TextBlock Style="{StaticResource Hint}" Text="설정·계정 DB(moaview.db), 서비스별 브라우저 데이터(WebView2), 로그(logs)가 이 폴더에 있습니다. 외부로 전송하지 않습니다." />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.DataFolderHint}" />
 
                         <WrapPanel Margin="0,12,0,0">
-                            <ui:Button Content="데이터 폴더 열기" Command="{Binding OpenDataFolderCommand}" Margin="0,0,8,8" />
-                            <ui:Button Content="로그 폴더 열기" Command="{Binding OpenLogsFolderCommand}" Margin="0,0,8,8" />
-                            <ui:Button Content="DB 백업..." Command="{Binding BackupDatabaseCommand}" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.OpenDataFolder}" Command="{Binding OpenDataFolderCommand}" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.OpenLogsFolder}" Command="{Binding OpenLogsFolderCommand}" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.BackupDbEllipsis}" Command="{Binding BackupDatabaseCommand}" Margin="0,0,8,8" />
                         </WrapPanel>
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="초기화" />
-                        <ui:Button Content="모든 서비스 데이터 초기화 (쿠키·캐시)" Command="{Binding ResetWebViewDataCommand}" Appearance="Danger" HorizontalAlignment="Left" />
-                        <TextBlock Style="{StaticResource Hint}" Text="모든 서비스에서 로그아웃되고 캐시가 지워집니다. 저장된 계정·설정은 남습니다. 서비스 하나만 로그아웃하려면 사이드바 아이콘을 우클릭하세요. DB 복원은 앱을 끈 뒤 백업 파일을 moaview.db로 복사하면 됩니다(같은 Windows 계정에서만 비밀번호가 풀립니다)." />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.Reset}" />
+                        <ui:Button Content="{x:Static res:Strings.ResetAllServiceData}" Command="{Binding ResetWebViewDataCommand}" Appearance="Danger" HorizontalAlignment="Left" />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.ResetHint}" />
 
                         <TextBlock Text="{Binding DataStatus}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" />
                     </StackPanel>
 
                     <!-- 6. 정보 -->
                     <StackPanel Style="{StaticResource TabPanel}" Visibility="{Binding SelectedTabIndex, Converter={StaticResource TabVisible}, ConverterParameter=6}">
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="정보" />
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="{x:Static res:Strings.About}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="150" />
@@ -241,26 +242,26 @@
                             </Grid.Resources>
                             <TextBlock Grid.Row="0" Grid.Column="0" Text="MoaView" Opacity="0.7" />
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AppVersion}" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="WebView2 런타임" Opacity="0.7" />
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="{x:Static res:Strings.WebView2Runtime}" Opacity="0.7" />
                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RuntimeVersion}" />
                             <TextBlock Grid.Row="2" Grid.Column="0" Text=".NET" Opacity="0.7" />
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DotNetVersion}" />
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="로그 폴더" Opacity="0.7" />
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static res:Strings.LogsFolder}" Opacity="0.7" />
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LogsFolder}" TextWrapping="Wrap" />
                         </Grid>
                         <WrapPanel Margin="0,4,0,0">
-                            <ui:Button Content="로그 폴더 열기" Command="{Binding OpenLogsFolderCommand}" Margin="0,0,8,8" />
-                            <ui:Button Content="GitHub 저장소" Command="{Binding OpenRepositoryCommand}" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.OpenLogsFolder}" Command="{Binding OpenLogsFolderCommand}" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.GitHubRepository}" Command="{Binding OpenRepositoryCommand}" Margin="0,0,8,8" />
                         </WrapPanel>
 
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="업데이트" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.Update}" />
                         <WrapPanel>
-                            <ui:Button Content="업데이트 확인" Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding CanCheckUpdates}" Margin="0,0,8,8" />
-                            <ui:Button Content="다시 시작해 적용" Command="{Binding ApplyUpdateCommand}" Appearance="Primary" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.CheckUpdates}" Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding CanCheckUpdates}" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.RestartToApply}" Command="{Binding ApplyUpdateCommand}" Appearance="Primary" Margin="0,0,8,8" />
                         </WrapPanel>
                         <TextBlock Text="{Binding UpdateStatus}" FontSize="12" TextWrapping="Wrap" />
                         <TextBlock Style="{StaticResource Hint}" Margin="0,16,0,0"
-                                   Text="각 서비스의 공식 웹 플레이어를 WebView2(Microsoft Edge 엔진)로 띄우는 통합 브라우저 셸입니다. 스트림 추출·DRM 우회·다운로드·광고 차단은 하지 않습니다. DRM(PlayReady·Widevine) 재생 여부와 최대 화질은 각 서비스가 WebView2에 허용하는 범위를 따릅니다." />
+                                   Text="{x:Static res:Strings.AboutDescription}" />
                     </StackPanel>
                 </Grid>
             </ScrollViewer>

@@ -14,6 +14,7 @@ using MoaView.Core.Entities;
 using MoaView.Core.Models;
 using MoaView.Infrastructure.Configuration;
 using MoaView.Infrastructure.WebView;
+using MoaView.App.Resources;
 
 namespace MoaView.App.ViewModels;
 
@@ -63,8 +64,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         _favicons = favicons;
         _updates = updates;
         UpdateStatus = _updates.IsInstalled
-            ? (_updates.ReadyVersion is { } ready ? $"v{ready} 다운로드 완료. 다시 시작하면 적용됩니다." : "GitHub Releases에서 새 버전을 확인합니다.")
-            : "설치 버전이 아니라(개발 실행 또는 포터블) 자동 업데이트를 쓰지 않습니다.";
+            ? (_updates.ReadyVersion is { } ready ? string.Format(Strings.UpdateDownloaded, ready) : Strings.UpdateCheckIdle)
+            : Strings.UpdateNotInstalled;
         IsUpdateReady = _updates.ReadyVersion is not null;
         _services = services;
         _accounts = accounts;
@@ -87,7 +88,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>WebView2 데이터 초기화처럼 다시 시작해야 적용되는 작업을 사용자가 지금 적용하기로 했다.</summary>
     public bool RestartRequested { get; private set; }
 
-    public IReadOnlyList<string> Tabs { get; } = ["일반", "서비스", "계정", "재생", "단축키", "데이터", "정보"];
+    public IReadOnlyList<string> Tabs { get; } = [Strings.General, Strings.Service, Strings.Account, Strings.Playback, Strings.Shortcuts, Strings.Data, Strings.About];
 
     [ObservableProperty]
     public partial int SelectedTabIndex { get; set; }
@@ -107,9 +108,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<ThemeOption> ThemeOptions { get; } =
     [
-        new(SettingKeys.ThemeDark, "다크 (기본)"),
-        new(SettingKeys.ThemeLight, "라이트"),
-        new(SettingKeys.ThemeSystem, "Windows 설정 따름"),
+        new(SettingKeys.ThemeDark, Strings.ThemeDark),
+        new(SettingKeys.ThemeLight, Strings.ThemeLight),
+        new(SettingKeys.ThemeSystem, Strings.ThemeSystem),
     ];
 
     [ObservableProperty]
@@ -142,19 +143,19 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public IReadOnlyList<ShortcutRow> Shortcuts { get; } =
     [
-        new("F11", "앱 전체화면 토글"),
-        new("Esc", "전체화면·미니 플레이어 해제 (그 외에는 페이지로 전달)"),
-        new("Ctrl + 1 ~ 9", "n번째 서비스로 전환"),
-        new("Ctrl + Tab / Ctrl + Shift + Tab", "다음 / 이전 서비스"),
-        new("Ctrl + B", "사이드바 펼치기/접기"),
-        new("Alt + ← / Alt + →", "뒤로 / 앞으로 (마우스 측면 버튼도 동일)"),
-        new("F5 / Ctrl + R", "새로고침"),
-        new("Alt + Home", "서비스 홈"),
-        new("Ctrl + + / Ctrl + - / Ctrl + 0", "확대 / 축소 / 배율 초기화 (서비스별 저장)"),
-        new("Ctrl + M", "미니 플레이어 토글"),
-        new("Ctrl + P", "PiP (화면 속 화면) 토글"),
-        new("Ctrl + ,", "설정 열기"),
-        new("Ctrl + Shift + L", "(개발용) 로그인 폼 구조를 로그에 기록"),
+        new("F11", Strings.ShortcutFullScreen),
+        new("Esc", Strings.ShortcutEscape),
+        new("Ctrl + 1 ~ 9", Strings.ShortcutSelectService),
+        new("Ctrl + Tab / Ctrl + Shift + Tab", Strings.ShortcutNextPrev),
+        new("Ctrl + B", Strings.SidebarToggle),
+        new("Alt + ← / Alt + →", Strings.ShortcutBackForward),
+        new("F5 / Ctrl + R", Strings.Refresh),
+        new("Alt + Home", Strings.ShortcutHome),
+        new("Ctrl + + / Ctrl + - / Ctrl + 0", Strings.ShortcutZoom),
+        new("Ctrl + M", Strings.ShortcutMini),
+        new("Ctrl + P", Strings.ShortcutPip),
+        new("Ctrl + ,", Strings.ShortcutSettings),
+        new("Ctrl + Shift + L", Strings.ShortcutFormAnalyze),
     ];
 
     // ---------------------------------------------------------------- 데이터 (FR-SET-04, 05)
@@ -168,7 +169,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     public string AppVersion => typeof(SettingsViewModel).Assembly.GetName().Version?.ToString(3) ?? "-";
 
-    public string RuntimeVersion => _environment.GetRuntimeVersion() ?? "설치되지 않음";
+    public string RuntimeVersion => _environment.GetRuntimeVersion() ?? Strings.NotInstalled;
 
     public string DotNetVersion => Environment.Version.ToString();
 
@@ -193,23 +194,23 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        UpdateStatus = "확인하는 중...";
+        UpdateStatus = Strings.UpdateChecking;
         var version = await _updates.CheckAsync();
         if (version is null)
         {
-            UpdateStatus = $"최신 버전입니다 (v{_updates.CurrentVersion}).";
+            UpdateStatus = string.Format(Strings.UpdateLatest, _updates.CurrentVersion);
             return;
         }
 
-        UpdateStatus = $"v{version} 다운로드 중...";
-        if (await _updates.DownloadAsync(p => UpdateStatus = $"v{version} 다운로드 중... {p}%"))
+        UpdateStatus = string.Format(Strings.UpdateDownloading, version);
+        if (await _updates.DownloadAsync(p => UpdateStatus = string.Format(Strings.UpdateDownloadingProgress, version, p)))
         {
-            UpdateStatus = $"v{version} 다운로드 완료. 다시 시작하면 적용됩니다.";
+            UpdateStatus = string.Format(Strings.UpdateDownloaded, version);
             IsUpdateReady = true;
         }
         else
         {
-            UpdateStatus = "다운로드에 실패했습니다. 로그를 확인하세요.";
+            UpdateStatus = Strings.UpdateDownloadFailed;
         }
     }
 
@@ -349,7 +350,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         await _services.AddAsync(draft);
         ServicesChanged = true;
         _logger.LogInformation("서비스 추가: {Code} {Name}", draft.Code, draft.Name);
-        ServiceStatus = $"'{draft.Name}' 서비스를 추가했습니다.";
+        ServiceStatus = string.Format(Strings.ServiceAdded, draft.Name);
         await ReloadServicesAsync(draft.Id);
         await ReloadAccountsAsync();
     }
@@ -387,7 +388,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         await _services.UpdateAsync(service);
         MarkChanged(service.Id);
         _logger.LogInformation("서비스 수정: {Code}", service.Code);
-        ServiceStatus = $"'{service.Name}' 서비스를 저장했습니다. 열려 있던 화면은 다시 엽니다.";
+        ServiceStatus = string.Format(Strings.ServiceSaved, service.Name);
         await ReloadServicesAsync(service.Id);
         await ReloadAccountsAsync();
     }
@@ -404,11 +405,11 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         var box = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "서비스 삭제",
-            Content = $"'{row.Name}' 서비스와 저장된 계정을 모두 삭제할까요?\n이 서비스의 쿠키·사이트 데이터는 남아 있다가 다음 '모든 서비스 데이터 초기화' 때 지워집니다.",
-            PrimaryButtonText = "삭제",
+            Title = Strings.DeleteServiceTitle,
+            Content = string.Format(Strings.DeleteServiceConfirm, row.Name),
+            PrimaryButtonText = Strings.Delete,
             PrimaryButtonAppearance = Wpf.Ui.Controls.ControlAppearance.Danger,
-            CloseButtonText = "취소",
+            CloseButtonText = Strings.Cancel,
         };
         if (await box.ShowDialogAsync() != Wpf.Ui.Controls.MessageBoxResult.Primary)
         {
@@ -419,7 +420,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _favicons.Delete(row.Service.Code);
         MarkChanged(row.Service.Id);
         _logger.LogInformation("서비스 삭제: {Code}", row.Service.Code);
-        ServiceStatus = $"'{row.Name}' 서비스를 삭제했습니다.";
+        ServiceStatus = string.Format(Strings.ServiceDeleted, row.Name);
         await ReloadServicesAsync();
         await ReloadAccountsAsync();
     }
@@ -539,9 +540,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         var dialog = new SaveFileDialog
         {
-            Title = "DB 백업",
+            Title = Strings.BackupDbTitle,
             FileName = $"moaview-backup-{DateTime.Now:yyyyMMdd-HHmm}.db",
-            Filter = "SQLite 데이터베이스 (*.db)|*.db|모든 파일 (*.*)|*.*",
+            Filter = Strings.BackupDbFilter,
             DefaultExt = ".db",
         };
         if (dialog.ShowDialog() != true)
@@ -553,12 +554,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             await _maintenance.BackupAsync(dialog.FileName);
             _logger.LogInformation("DB 백업: {Path}", dialog.FileName);
-            DataStatus = $"백업했습니다: {dialog.FileName}\n저장된 비밀번호는 같은 Windows 계정·같은 설치에서만 복원됩니다.";
+            DataStatus = string.Format(Strings.BackupDone, dialog.FileName);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "DB 백업 실패: {Path}", dialog.FileName);
-            DataStatus = $"백업에 실패했습니다: {ex.Message}";
+            DataStatus = string.Format(Strings.BackupFailed, ex.Message);
         }
     }
 
@@ -568,12 +569,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         var box = new Wpf.Ui.Controls.MessageBox
         {
-            Title = "모든 서비스 데이터 초기화",
-            Content = "모든 서비스의 로그인 세션(쿠키)과 캐시를 지웁니다. 저장된 계정과 설정은 남습니다.\n브라우저 데이터는 실행 중에 지울 수 없어 앱을 다시 시작할 때 지워집니다. 지금 다시 시작할까요?",
-            PrimaryButtonText = "지금 다시 시작",
+            Title = Strings.ResetAllTitle,
+            Content = Strings.ResetAllConfirm,
+            PrimaryButtonText = Strings.RestartNow,
             PrimaryButtonAppearance = Wpf.Ui.Controls.ControlAppearance.Danger,
-            SecondaryButtonText = "다음 실행 때",
-            CloseButtonText = "취소",
+            SecondaryButtonText = Strings.NextLaunch,
+            CloseButtonText = Strings.Cancel,
         };
         var result = await box.ShowDialogAsync();
         if (result == Wpf.Ui.Controls.MessageBoxResult.None)
@@ -590,7 +591,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        DataStatus = "다음에 앱을 시작할 때 모든 서비스의 쿠키·캐시를 지웁니다.";
+        DataStatus = Strings.ResetScheduled;
     }
 
     private void OpenFolder(string path)
@@ -603,7 +604,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "폴더 열기 실패: {Path}", path);
-            DataStatus = $"폴더를 열 수 없습니다: {path}";
+            DataStatus = string.Format(Strings.CannotOpenFolder, path);
         }
     }
 }
@@ -648,7 +649,7 @@ public sealed partial class ServiceRowViewModel : ObservableObject
 
     public bool IsBuiltIn => Service.IsBuiltIn;
 
-    public string KindText => Service.IsBuiltIn ? "기본" : "사용자";
+    public string KindText => Service.IsBuiltIn ? Strings.Default : Strings.UserDefined;
 
     public string ZoomText => $"{Service.ZoomFactor * 100:0}%";
 
@@ -688,12 +689,12 @@ public sealed class AccountSummaryViewModel(StreamingService service, IReadOnlyL
         {
             if (accounts.Count == 0)
             {
-                return "저장된 계정 없음 (세션만 유지)";
+                return Strings.NoSavedAccount;
             }
 
             var main = accounts.FirstOrDefault(a => a.IsDefault) ?? accounts[0];
-            var mode = !main.AutoFillEnabled ? "자동 로그인 꺼짐" : main.AutoSubmitEnabled ? "자동 입력 + 제출" : "자동 입력만";
-            return accounts.Count == 1 ? $"{main.LoginId} · {mode}" : $"{main.LoginId} 외 {accounts.Count - 1}개 · {mode}";
+            var mode = !main.AutoFillEnabled ? Strings.AutoLoginOff : main.AutoSubmitEnabled ? Strings.AutoFillSubmitLong : Strings.AutoFillOnlyLong;
+            return accounts.Count == 1 ? $"{main.LoginId} · {mode}" : string.Format(Strings.AccountSummaryMany, main.LoginId, accounts.Count - 1, mode);
         }
     }
 }

@@ -7,6 +7,7 @@ using MoaView.App.Views;
 using MoaView.Core.Abstractions;
 using MoaView.Core.Entities;
 using MoaView.Core.Models;
+using MoaView.App.Resources;
 
 namespace MoaView.App.ViewModels;
 
@@ -170,8 +171,8 @@ public sealed partial class MainViewModel : ObservableObject
                 return;
             }
 
-            ShowBanner($"새 버전 v{version}을 받았습니다", "다시 시작하면 적용됩니다. 재생 중이면 나중에 설정 > 정보에서 적용할 수 있습니다.",
-                "다시 시작", () =>
+            ShowBanner(string.Format(Strings.UpdateReadyTitle, version), Strings.UpdateReadyMessage,
+                Strings.Restart, () =>
                 {
                     _updates.ApplyAndRestart();
                     return Task.CompletedTask;
@@ -380,7 +381,7 @@ public sealed partial class MainViewModel : ObservableObject
         await _hosts.ClearSessionAsync(item.Service.Code);
         // 저장된 계정이 있으면 바로 로그인 페이지로 가서 자동 입력한다. 없으면 홈으로.
         await _loginAssist.AfterLogoutAsync(item.Service);
-        ShowBanner("로그아웃했습니다", $"{item.Name}의 쿠키와 사이트 데이터를 지웠습니다.", null, null);
+        ShowBanner(Strings.LoggedOutTitle, string.Format(Strings.LoggedOutMessage, item.Name), null, null);
     }
 
     /// <summary>개발용(Ctrl+Shift+L): 현재 페이지의 로그인 폼 구조를 로그에 남긴다. 입력 값은 포함되지 않는다.</summary>
@@ -397,13 +398,13 @@ public sealed partial class MainViewModel : ObservableObject
         var json = ScriptLoader.ReadString(raw);
         if (json is null)
         {
-            ShowBanner("로그인 폼 분석 실패", "페이지에서 결과를 받지 못했습니다.", null, null);
+            ShowBanner(Strings.FormAnalyzeFailedTitle, Strings.FormAnalyzeFailedMessage, null, null);
             return;
         }
 
         _logger.LogInformation("[{Service}] 로그인 폼 분석: {Json}", host.Service.Code, json);
-        ShowBanner("로그인 폼 분석 결과를 로그에 기록했습니다",
-            "%LOCALAPPDATA%\\MoaView\\logs 의 오늘 로그에서 '로그인 폼 분석'을 찾으세요.", null, null);
+        ShowBanner(Strings.FormAnalyzeDoneTitle,
+            Strings.FormAnalyzeDoneMessage, null, null);
     }
 
     // ---------------------------------------------------------------- 전체화면·사이드바
@@ -560,7 +561,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private void OnHostFailed(object? sender, HostFailedEventArgs e) =>
-        ShowBanner(e.Title, e.Message, e.CanRetry ? "다시 시도" : null,
+        ShowBanner(e.Title, e.Message, e.CanRetry ? Strings.Retry : null,
             e.CanRetry ? () => { _hosts.Reload(); return Task.CompletedTask; } : null);
 
     private void OnLoginNotice(object? sender, LoginNotice notice) =>
