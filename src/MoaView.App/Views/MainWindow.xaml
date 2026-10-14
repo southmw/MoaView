@@ -51,12 +51,18 @@
             </Setter>
         </Style>
 
+        <!--
+            이름·단축키는 사이드바를 펼쳤을 때만 보인다. 접힌 폭(64px)에서는 잘린 글자 끝이 비쳐 보이므로 숨긴다.
+            사이드바 DockPanel의 DataContext(MainViewModel)를 보며, 서비스 항목 템플릿 안에서도 같은 조상을 찾는다.
+        -->
         <Style x:Key="SidebarLabel" TargetType="TextBlock">
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Margin" Value="4,0,8,0" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="TextTrimming" Value="CharacterEllipsis" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Visibility"
+                    Value="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=DockPanel}, Converter={StaticResource BoolToVisibility}}" />
         </Style>
 
         <Style x:Key="SidebarHint" TargetType="TextBlock">
@@ -64,6 +70,8 @@
             <Setter Property="Margin" Value="0,0,12,0" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Setter Property="Visibility"
+                    Value="{Binding DataContext.IsSidebarExpanded, RelativeSource={RelativeSource AncestorType=DockPanel}, Converter={StaticResource BoolToVisibility}}" />
         </Style>
 
         <!-- 서비스 항목: 이니셜 원형 아이콘(브랜드 로고 미포함, D-08), 선택은 왼쪽 강조 막대, 로드됨은 점. -->
