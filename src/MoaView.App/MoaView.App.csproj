@@ -11,6 +11,8 @@
     <AssemblyName>MoaView</AssemblyName>
     <!-- 앱 아이콘(Assets/moaview.ico): 사이드바 타일 3개 + 재생 삼각형. 서비스 로고는 쓰지 않는다(D-08) -->
     <ApplicationIcon>Assets\moaview.ico</ApplicationIcon>
+    <!-- Velopack 훅을 WPF보다 먼저 처리하려고 Program.Main을 진입점으로 쓴다(D-17) -->
+    <StartupObject>MoaView.App.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +31,7 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
     <PackageReference Include="WPF-UI" Version="4.3.0" />
   </ItemGroup>
 

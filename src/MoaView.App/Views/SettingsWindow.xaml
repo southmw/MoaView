@@ -248,7 +248,17 @@
                             <TextBlock Grid.Row="3" Grid.Column="0" Text="로그 폴더" Opacity="0.7" />
                             <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LogsFolder}" TextWrapping="Wrap" />
                         </Grid>
-                        <ui:Button Content="로그 폴더 열기" Command="{Binding OpenLogsFolderCommand}" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                        <WrapPanel Margin="0,4,0,0">
+                            <ui:Button Content="로그 폴더 열기" Command="{Binding OpenLogsFolderCommand}" Margin="0,0,8,8" />
+                            <ui:Button Content="GitHub 저장소" Command="{Binding OpenRepositoryCommand}" Margin="0,0,8,8" />
+                        </WrapPanel>
+
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="업데이트" />
+                        <WrapPanel>
+                            <ui:Button Content="업데이트 확인" Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding CanCheckUpdates}" Margin="0,0,8,8" />
+                            <ui:Button Content="다시 시작해 적용" Command="{Binding ApplyUpdateCommand}" Appearance="Primary" Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding UpdateStatus}" FontSize="12" TextWrapping="Wrap" />
                         <TextBlock Style="{StaticResource Hint}" Margin="0,16,0,0"
                                    Text="각 서비스의 공식 웹 플레이어를 WebView2(Microsoft Edge 엔진)로 띄우는 통합 브라우저 셸입니다. 스트림 추출·DRM 우회·다운로드·광고 차단은 하지 않습니다. DRM(PlayReady·Widevine) 재생 여부와 최대 화질은 각 서비스가 WebView2에 허용하는 범위를 따릅니다." />
                     </StackPanel>

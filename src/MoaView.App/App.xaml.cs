@@ -20,8 +20,6 @@ namespace MoaView.App;
 
 public partial class App : Application
 {
-    private const string WebView2DownloadUrl = "https://developer.microsoft.com/microsoft-edge/webview2/";
-
     /// <summary>처리된 UI 예외를 사용자에게 알리는 횟수 상한. 같은 오류가 반복되면 로그만 남긴다.</summary>
     private const int MaxErrorDialogsPerSession = 3;
 
@@ -77,6 +75,7 @@ public partial class App : Application
         builder.Services.AddSingleton<ISettingsDialog, SettingsDialogService>();
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddSingleton<ThemeService>();
+        builder.Services.AddSingleton<UpdateService>();
         builder.Services.AddSingleton<LoginAssistService>();
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<MainWindow>();
@@ -93,18 +92,9 @@ public partial class App : Application
 
         _singleInstance.ListenForActivation(() => Dispatcher.InvokeAsync(ActivateMainWindow));
 
-        // 06 UI/UX 5절: WebView2 런타임이 없으면 설치 안내 후 종료한다.
-        if (environmentProvider.GetRuntimeVersion() is null)
+        // 06 UI/UX 5절: WebView2 런타임이 없으면 부트스트래퍼로 설치를 시도하고, 안 되면 다운로드 페이지를 안내한 뒤 종료한다.
+        if (environmentProvider.GetRuntimeVersion() is null && !await EnsureWebView2RuntimeAsync(logger, environmentProvider))
         {
-            logger.LogError("WebView2 런타임이 설치되어 있지 않습니다.");
-            var result = MessageBox.Show(
-                "Microsoft Edge WebView2 런타임이 필요합니다.\n다운로드 페이지를 열까요?",
-                "MoaView", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-            if (result == MessageBoxResult.Yes)
-            {
-                Process.Start(new ProcessStartInfo(WebView2DownloadUrl) { UseShellExecute = true });
-            }
-
             Shutdown();
             return;
         }
@@ -134,6 +124,35 @@ public partial class App : Application
         var window = _host.Services.GetRequiredService<MainWindow>();
         MainWindow = window;
         window.Show();
+    }
+
+    /// <summary>Phase 4 WebView2 부트스트래퍼. 설치 뒤 런타임이 잡히면 true, 거절·실패면 다운로드 페이지를 안내하고 false.</summary>
+    private static async Task<bool> EnsureWebView2RuntimeAsync(ILogger<App> logger, IWebView2EnvironmentProvider environmentProvider)
+    {
+        logger.LogError("WebView2 런타임이 설치되어 있지 않습니다.");
+        var install = MessageBox.Show(
+            "MoaView를 실행하려면 Microsoft Edge WebView2 런타임이 필요합니다.\n지금 Microsoft 설치 관리자를 내려받아 설치할까요? (관리자 권한을 요청할 수 있습니다)",
+            "MoaView", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+        if (install == MessageBoxResult.Yes)
+        {
+            var ok = await WebView2Bootstrapper.TryInstallAsync(logger);
+            if (ok && environmentProvider.GetRuntimeVersion() is { } version)
+            {
+                logger.LogInformation("WebView2 런타임 설치 완료: {Version}", version);
+                return true;
+            }
+        }
+
+        var open = MessageBox.Show(
+            "WebView2 런타임을 설치하지 못했습니다.\nMicrosoft 다운로드 페이지를 열까요? 설치한 뒤 MoaView를 다시 실행하세요.",
+            "MoaView", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (open == MessageBoxResult.Yes)
+        {
+            Process.Start(new ProcessStartInfo(WebView2Bootstrapper.DownloadPageUrl) { UseShellExecute = true });
+        }
+
+        return false;
     }
 
     /// <summary>

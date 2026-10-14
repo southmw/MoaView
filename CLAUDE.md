@@ -16,7 +16,10 @@ dotnet test src/MoaView.slnx                  # Core.Tests(순수 로직), Infra
 dotnet test src/tests/MoaView.Infrastructure.Tests --filter "FullyQualifiedName~ProviderTests.Netflix_detects_login_page"   # 단일 테스트
 dotnet run --project src/MoaView.App          # 본 앱 실행. 로그: %LOCALAPPDATA%\MoaView\logs\app-<날짜>.log
 dotnet ef migrations add <Name> --project src/MoaView.Infrastructure --startup-project src/MoaView.App --output-dir Persistence/Migrations   # 시작 프로젝트는 반드시 App(라이브러리만으로는 Windows SDK 어셈블리를 못 찾음)
+pwsh tools/release/pack.ps1 [-Version 0.2.0] [-Upload]   # Velopack 패키징(Releases\, gitignore). 릴리스는 태그 v* 푸시 → GitHub Actions(release.yml)가 업로드
 ```
+
+릴리스 버전은 `src/Directory.Build.props`의 `Version`과 태그를 맞춥니다. 패키징은 프레임워크 의존(`--framework net10.0-x64-desktop,webview2`, `--runtime win-x64`)이라 설치기가 .NET Desktop Runtime과 WebView2 런타임을 받아 설치합니다. 패키지를 추가·변경하면 `THIRD-PARTY-NOTICES.md`를 함께 갱신하고, FluentAssertions는 8.x부터 상용이라 7.x에 고정합니다.
 
 빌드 전 실행 중인 `MoaView.exe`가 있으면 exe가 잠겨 실패하므로 먼저 종료합니다. Debug 빌드는 Debug 레벨 로그(탐색·URL 변경·저장 예약)를 남기고 Release는 Information부터입니다. 개발 PC의 회사망은 netflix.com을 차단하므로(사용자 확인) 앱을 자동 실행해 검증할 때 Netflix를 첫 서비스로 두면 탐색이 멈춰 이벤트가 전혀 오지 않습니다. DB의 `Startup.LastServiceId`를 4(YouTube)로 바꿔 검증하고, Netflix 실측은 사용자가 테더링이나 집 네트워크에서 합니다. 솔루션 파일과 공통 빌드 속성(`Nullable`, TFM 변수 `WindowsTargetFramework`)은 `src/MoaView.slnx`, `src/Directory.Build.props`에 있습니다(저장소 루트에는 문서·CLAUDE.md·tools만 둠). DPAPI 엔트로피 상수는 개명 전 값(`MyOTTPlayer.Credential.v1`)을 유지해야 저장된 비밀번호가 풀립니다. `UseWPF`를 켠 프로젝트는 WPF SDK의 암시적 using에 `System.IO`가 빠지므로 `Path`·`Directory`를 쓰는 파일은 `using System.IO;`를 명시합니다.
 
@@ -36,7 +39,9 @@ PoC에서 확정된 기술 사항: `WebView2CompositionControl`을 쓰려면 TFM
 src/MoaView.slnx, src/Directory.Build.props   솔루션과 공통 빌드 속성
 tools/icon/                      앱 아이콘 생성 스크립트(GDI+ 렌더 + ICO 조립). 아이콘을 바꿀 때만 사용
 src/MoaView.App/             WPF 실행 프로젝트(net10.0-windows10.0.19041.0, AssemblyName MoaView, 아이콘 Assets/moaview.ico)
-  App.xaml.cs                    중복 실행 방지(SingleInstanceGuard), Generic Host, DI, Serilog, 전역 예외 처리(UI 예외 안내 3회, AppDomain 예외는 logs\crash-*.log), WebView2 런타임 확인
+  Program.cs                     진입점(csproj StartupObject). Velopack 훅(VelopackApp.Build().Run())을 WPF보다 먼저 처리한 뒤 App을 띄움
+  App.xaml.cs                    중복 실행 방지(SingleInstanceGuard), Generic Host, DI, Serilog, 전역 예외 처리(UI 예외 안내 3회, AppDomain 예외는 logs\crash-*.log), WebView2 런타임 확인(없으면 WebView2Bootstrapper로 설치 시도)
+  Services/UpdateService         Velopack + GitHub Releases 자동 업데이트(D-17). 설치 버전(IsInstalled)에서만 동작. MainViewModel이 시작 10초 뒤 확인·다운로드 후 배너, 설정 > 정보에서 수동 확인
   Views/MainWindow               FluentWindow + 사이드바 + 배너 + HostArea, 단축키(PreviewKeyDown)
   Views/OAuthPopupWindow         소셜 로그인 팝업(요청 서비스와 같은 프로필)
   Views/AccountsWindow, AccountEditDialog   계정 관리(서비스 아이콘 우클릭 → 계정 관리, 설정 > 계정)

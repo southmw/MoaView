@@ -41,6 +41,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly AppPaths _paths;
     private readonly IDatabaseMaintenance _maintenance;
     private readonly FaviconCache _favicons;
+    private readonly UpdateService _updates;
     private readonly ILogger<SettingsViewModel> _logger;
 
     private bool _loaded;
@@ -56,9 +57,15 @@ public sealed partial class SettingsViewModel : ObservableObject
         AppPaths paths,
         IDatabaseMaintenance maintenance,
         FaviconCache favicons,
+        UpdateService updates,
         ILogger<SettingsViewModel> logger)
     {
         _favicons = favicons;
+        _updates = updates;
+        UpdateStatus = _updates.IsInstalled
+            ? (_updates.ReadyVersion is { } ready ? $"v{ready} 다운로드 완료. 다시 시작하면 적용됩니다." : "GitHub Releases에서 새 버전을 확인합니다.")
+            : "설치 버전이 아니라(개발 실행 또는 포터블) 자동 업데이트를 쓰지 않습니다.";
+        IsUpdateReady = _updates.ReadyVersion is not null;
         _services = services;
         _accounts = accounts;
         _accountsDialog = accountsDialog;
@@ -166,6 +173,61 @@ public sealed partial class SettingsViewModel : ObservableObject
     public string DotNetVersion => Environment.Version.ToString();
 
     public string LogsFolder => _paths.LogsFolder;
+
+    public string RepositoryUrl => UpdateService.RepositoryUrl;
+
+    public bool CanCheckUpdates => _updates.IsInstalled;
+
+    [ObservableProperty]
+    public partial string UpdateStatus { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ApplyUpdateCommand))]
+    public partial bool IsUpdateReady { get; set; }
+
+    [RelayCommand]
+    private async Task CheckUpdatesAsync()
+    {
+        if (!_updates.IsInstalled)
+        {
+            return;
+        }
+
+        UpdateStatus = "확인하는 중...";
+        var version = await _updates.CheckAsync();
+        if (version is null)
+        {
+            UpdateStatus = $"최신 버전입니다 (v{_updates.CurrentVersion}).";
+            return;
+        }
+
+        UpdateStatus = $"v{version} 다운로드 중...";
+        if (await _updates.DownloadAsync(p => UpdateStatus = $"v{version} 다운로드 중... {p}%"))
+        {
+            UpdateStatus = $"v{version} 다운로드 완료. 다시 시작하면 적용됩니다.";
+            IsUpdateReady = true;
+        }
+        else
+        {
+            UpdateStatus = "다운로드에 실패했습니다. 로그를 확인하세요.";
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsUpdateReady))]
+    private void ApplyUpdate() => _updates.ApplyAndRestart();
+
+    [RelayCommand]
+    private void OpenRepository()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(UpdateService.RepositoryUrl) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "저장소 페이지 열기 실패");
+        }
+    }
 
     // ---------------------------------------------------------------- 로드
 

@@ -1,0 +1,53 @@
+# D-17: 태그 v* 를 푸시하면 테스트 → publish → Velopack 패키징 → GitHub Release 업로드.
+# 코드 서명은 하지 않는다(개인용). 수동 실행(workflow_dispatch)도 가능하며 그때는 version 입력을 쓴다.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "패키지 버전 (예: 0.2.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Resolve version
+        shell: pwsh
+        run: |
+          $v = if ("${{ github.event.inputs.version }}") { "${{ github.event.inputs.version }}" } else { "${{ github.ref_name }}".TrimStart("v") }
+          "VERSION=$v" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "version: $v"
+
+      - name: Test
+        run: dotnet test src/MoaView.slnx -c Release --nologo
+
+      - name: Publish
+        run: dotnet publish src/MoaView.App -c Release -r win-x64 --self-contained false -o publish -p:Version=${{ env.VERSION }} --nologo
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version 1.2.161
+
+      - name: Pack
+        run: >
+          vpk pack --packId MoaView --packVersion ${{ env.VERSION }} --packDir publish --mainExe MoaView.exe
+          --packTitle MoaView --packAuthors "Minwoo Nam" --icon src/MoaView.App/Assets/moaview.ico
+          --framework net10.0-x64-desktop,webview2 --runtime win-x64 --channel win --outputDir Releases
+
+      - name: Upload to GitHub Releases
+        run: >
+          vpk upload github --repoUrl https://github.com/${{ github.repository }} --publish
+          --releaseName "MoaView v${{ env.VERSION }}" --tag v${{ env.VERSION }} --token ${{ secrets.GITHUB_TOKEN }}
+          --outputDir Releases --channel win

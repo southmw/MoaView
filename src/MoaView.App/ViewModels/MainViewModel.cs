@@ -20,8 +20,12 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly ISettingsDialog _settingsDialog;
     private readonly IServiceRepository _serviceRepository;
     private readonly FaviconCache _favicons;
+    private readonly UpdateService _updates;
     private readonly LoginAssistService _loginAssist;
     private readonly ILogger<MainViewModel> _logger;
+
+    /// <summary>시작 직후에는 서비스 로드가 우선이라 업데이트 확인은 조금 미룬다.</summary>
+    private static readonly TimeSpan UpdateCheckDelay = TimeSpan.FromSeconds(10);
 
     private Func<Task>? _bannerAction;
     private Func<Task>? _bannerSecondaryAction;
@@ -36,6 +40,7 @@ public sealed partial class MainViewModel : ObservableObject
         ISettingsDialog settingsDialog,
         IServiceRepository serviceRepository,
         FaviconCache favicons,
+        UpdateService updates,
         LoginAssistService loginAssist,
         ILogger<MainViewModel> logger)
     {
@@ -47,6 +52,7 @@ public sealed partial class MainViewModel : ObservableObject
         _settingsDialog = settingsDialog;
         _serviceRepository = serviceRepository;
         _favicons = favicons;
+        _updates = updates;
         _loginAssist = loginAssist;
         _logger = logger;
 
@@ -142,6 +148,38 @@ public sealed partial class MainViewModel : ObservableObject
         if (start is not null)
         {
             await SelectServiceAsync(start);
+        }
+
+        _ = CheckForUpdatesInBackgroundAsync();
+    }
+
+    /// <summary>D-17: 설치된 앱이면 GitHub Releases에서 새 버전을 확인해 미리 받아 두고, 배너로 다시 시작을 권한다.</summary>
+    private async Task CheckForUpdatesInBackgroundAsync()
+    {
+        if (!_updates.IsInstalled)
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(UpdateCheckDelay);
+            var version = await _updates.CheckAsync();
+            if (version is null || !await _updates.DownloadAsync())
+            {
+                return;
+            }
+
+            ShowBanner($"새 버전 v{version}을 받았습니다", "다시 시작하면 적용됩니다. 재생 중이면 나중에 설정 > 정보에서 적용할 수 있습니다.",
+                "다시 시작", () =>
+                {
+                    _updates.ApplyAndRestart();
+                    return Task.CompletedTask;
+                });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "백그라운드 업데이트 확인 실패");
         }
     }
 
