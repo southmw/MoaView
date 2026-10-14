@@ -84,6 +84,8 @@
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.WindowSection}" />
                         <!-- 트레이 상주(FR-NAV-05)는 Could이고 개발 계획에 없어 항목을 두지 않는다. 중복 실행 방지는 항상 켜져 있어 옵션이 없다. -->
                         <TextBlock Style="{StaticResource Hint}" Margin="0" Text="{x:Static res:Strings.SingleInstanceHint}" />
+                        <CheckBox Content="{x:Static res:Strings.CloseToTrayOption}" IsChecked="{Binding CloseToTray}" Margin="0,8,0,0" />
+                        <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.CloseToTrayHint}" />
                     </StackPanel>
 
                     <!-- 1. 서비스 -->
@@ -95,7 +97,9 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <ui:ListView Grid.Column="0" MinHeight="240" ItemsSource="{Binding Services}" SelectedItem="{Binding SelectedService}"
+                            <ui:ListView x:Name="ServiceListView" Grid.Column="0" MinHeight="240" ItemsSource="{Binding Services}" SelectedItem="{Binding SelectedService}"
+                                         AllowDrop="True" PreviewMouseLeftButtonDown="OnServiceListMouseDown" PreviewMouseMove="OnServiceListMouseMove"
+                                         DragOver="OnServiceListDragOver" Drop="OnServiceListDrop"
                                          SelectionMode="Single" AutomationProperties.Name="{x:Static res:Strings.ServiceList}">
                                 <ui:ListView.View>
                                     <ui:GridView>
@@ -217,7 +221,10 @@
                         </WrapPanel>
 
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{x:Static res:Strings.Reset}" />
-                        <ui:Button Content="{x:Static res:Strings.ResetAllServiceData}" Command="{Binding ResetWebViewDataCommand}" Appearance="Danger" HorizontalAlignment="Left" />
+                        <WrapPanel>
+                            <ui:Button Content="{x:Static res:Strings.ResetAllServiceData}" Command="{Binding ResetWebViewDataCommand}" Appearance="Danger" Margin="0,0,8,8" />
+                            <ui:Button Content="{x:Static res:Strings.ResetAllDataButton}" Command="{Binding ResetAllDataCommand}" Appearance="Danger" Margin="0,0,8,8" />
+                        </WrapPanel>
                         <TextBlock Style="{StaticResource Hint}" Text="{x:Static res:Strings.ResetHint}" />
 
                         <TextBlock Text="{Binding DataStatus}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" />

@@ -77,6 +77,7 @@ public partial class App : Application
         builder.Services.AddTransient<SettingsViewModel>();
         builder.Services.AddSingleton<ThemeService>();
         builder.Services.AddSingleton<UpdateService>();
+        builder.Services.AddSingleton<TrayService>();
         builder.Services.AddSingleton<LoginAssistService>();
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<MainWindow>();
@@ -92,6 +93,20 @@ public partial class App : Application
         logger.LogDebug("Debug 로깅 활성 (Debug 빌드)");
 
         _singleInstance.ListenForActivation(() => Dispatcher.InvokeAsync(ActivateMainWindow));
+
+        // D-18: 설정 > 데이터 "모든 데이터 초기화"가 남긴 표식이 있으면 DB를 열기 전에 DB·WebView2·아이콘을 지운다.
+        var removed = DataReset.ExecuteIfScheduled(paths, out var resetErrors);
+        foreach (var item in removed)
+        {
+            logger.LogWarning("모든 데이터 초기화: 삭제 {Target}", item);
+        }
+
+        foreach (var error in resetErrors)
+        {
+            logger.LogError("모든 데이터 초기화 실패(다음 시작 때 재시도): {Error}", error);
+        }
+
+        paths.EnsureCreated();
 
         // 06 UI/UX 5절: WebView2 런타임이 없으면 부트스트래퍼로 설치를 시도하고, 안 되면 다운로드 페이지를 안내한 뒤 종료한다.
         if (environmentProvider.GetRuntimeVersion() is null && !await EnsureWebView2RuntimeAsync(logger, environmentProvider))

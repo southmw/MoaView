@@ -7,7 +7,7 @@ using MoaView.App.Views;
 
 namespace MoaView.App.Services;
 
-public sealed class SettingsDialogService(IServiceProvider services, ILogger<SettingsDialogService> logger) : ISettingsDialog
+public sealed class SettingsDialogService(IServiceProvider services, TrayService tray, ILogger<SettingsDialogService> logger) : ISettingsDialog
 {
     private SettingsWindow? _open;
 
@@ -20,7 +20,7 @@ public sealed class SettingsDialogService(IServiceProvider services, ILogger<Set
         }
 
         var viewModel = services.GetRequiredService<SettingsViewModel>();
-        var window = new SettingsWindow(viewModel) { Owner = Application.Current.MainWindow };
+        var window = new SettingsWindow(viewModel, services.GetRequiredService<ILogger<SettingsWindow>>()) { Owner = Application.Current.MainWindow };
         _open = window;
         try
         {
@@ -48,12 +48,13 @@ public sealed class SettingsDialogService(IServiceProvider services, ILogger<Set
         if (exe is null)
         {
             logger.LogWarning("실행 파일 경로를 알 수 없어 다시 시작하지 못했습니다. 수동으로 다시 실행하세요.");
-            Application.Current.Shutdown();
+            tray.Exit();
             return;
         }
 
         logger.LogInformation("사용자 요청으로 다시 시작: {Exe}", exe);
         Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true });
-        Application.Current.Shutdown();
+        // "닫으면 트레이로"가 켜져 있어도 정말 끝내야 하므로 Shutdown 대신 트레이 서비스의 Exit로 닫는다.
+        tray.Exit();
     }
 }

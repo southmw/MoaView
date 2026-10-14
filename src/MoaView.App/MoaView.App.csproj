@@ -16,6 +16,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      트레이 아이콘(FR-NAV-05)은 WinForms NotifyIcon을 쓴다. UseWindowsForms=true로 켜면 WPF의 App.xaml BAML이 빠져
+      시작 즉시 'app.xaml 리소스가 없습니다'로 죽으므로, 대신 WinForms 어셈블리까지 포함하는 전체 WindowsDesktop 프레임워크를 참조한다.
+    -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MoaView.Core\MoaView.Core.csproj" />
     <ProjectReference Include="..\MoaView.Infrastructure\MoaView.Infrastructure.csproj" />
   </ItemGroup>

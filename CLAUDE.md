@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 상태
 
-MoaView(구 MyOTTPlayer, 2026-10-13 개명)는 Netflix, TVING, Wavve, YouTube, 치지직을 하나의 Windows 데스크톱 앱에서 전환하며 시청하는 "통합 브라우저 셸"입니다. **Phase 0(PoC)은 2026-10-13에 Go 판정, Phase 1(MVP 셸)·Phase 2(데이터·계정)는 구현 완료(실사용 검증 일부 남음), Phase 3(품질·편의)은 진행 중입니다.** Phase 3에서 완료한 것은 Suspend/LRU, 미니 플레이어, PiP, 배율 저장, 개명·아이콘, 설정 화면(2026-10-14: 일반·서비스·계정·재생·단축키·데이터·정보 탭), 사용자 정의 서비스 추가·수정·삭제, 사이드바 정렬(위/아래 버튼)·활성화 토글, 다크/라이트/시스템 테마, 파비콘 캐시, 미니 창 위치·크기 저장이고, Phase 3에 남은 것은 Could 항목(드래그 정렬, DB 복원 UI, 다중 계정)뿐입니다. Phase 4(배포·안정화)는 2026-10-14에 중복 실행 방지, 크래시 로그, WebView2 부트스트래퍼, Velopack 패키징·자동 업데이트, MIT 라이선스·THIRD-PARTY-NOTICES, `.resx` 분리, 사용자 가이드까지 끝났고, 남은 것은 첫 릴리스 태그(v0.1.0) 푸시와 설치·업데이트 실측, DPI·다중 모니터·장시간 재생 테스트, 그리고 사용자 실측이 필요한 Phase 1·2 검증 항목입니다. 저장소는 https://github.com/southmw/MoaView (main 브랜치). 진행 상황은 [Doc/07_개발_계획.md](Doc/07_개발_계획.md) 체크리스트, PoC에서 확인된 사실은 [Doc/09_PoC_결과.md](Doc/09_PoC_결과.md)에 있습니다.
+MoaView(구 MyOTTPlayer, 2026-10-13 개명)는 Netflix, TVING, Wavve, YouTube, 치지직을 하나의 Windows 데스크톱 앱에서 전환하며 시청하는 "통합 브라우저 셸"입니다. **Phase 0(PoC)은 2026-10-13에 Go 판정, Phase 1(MVP 셸)·Phase 2(데이터·계정)는 구현 완료(실사용 검증 일부 남음), Phase 3(품질·편의)은 진행 중입니다.** Phase 3에서 완료한 것은 Suspend/LRU, 미니 플레이어, PiP, 배율 저장, 개명·아이콘, 설정 화면(2026-10-14: 일반·서비스·계정·재생·단축키·데이터·정보 탭), 사용자 정의 서비스 추가·수정·삭제, 사이드바 정렬(위/아래 버튼)·활성화 토글, 다크/라이트/시스템 테마, 파비콘 캐시, 미니 창 위치·크기 저장이고, Could 항목은 2026-10-14 D-18로 정리했습니다(드래그 정렬·트레이 상주·모든 데이터 초기화 구현, 다중 계정 제외, 제휴 로그인 보류 Q-09). Phase 4(배포·안정화)는 2026-10-14에 중복 실행 방지, 크래시 로그, WebView2 부트스트래퍼, Velopack 패키징·자동 업데이트, MIT 라이선스·THIRD-PARTY-NOTICES, `.resx` 분리, 사용자 가이드까지 끝났고, 남은 것은 첫 릴리스 태그(v0.1.0) 푸시와 설치·업데이트 실측, DPI·다중 모니터·장시간 재생 테스트, 그리고 사용자 실측이 필요한 Phase 1·2 검증 항목입니다. 저장소는 https://github.com/southmw/MoaView (main 브랜치). 진행 상황은 [Doc/07_개발_계획.md](Doc/07_개발_계획.md) 체크리스트, PoC에서 확인된 사실은 [Doc/09_PoC_결과.md](Doc/09_PoC_결과.md)에 있습니다.
 
 설계가 바뀌면 코드와 함께 `Doc/` 문서를 갱신합니다. 문서는 번호 접두사를 붙인 한국어 마크다운입니다.
 
@@ -43,6 +43,7 @@ tools/release/pack.ps1           Velopack 패키징(로컬). CI는 .github/workf
 src/MoaView.App/             WPF 실행 프로젝트(net10.0-windows10.0.19041.0, AssemblyName MoaView, 아이콘 Assets/moaview.ico)
   Program.cs                     진입점(csproj StartupObject). Velopack 훅(VelopackApp.Build().Run())을 WPF보다 먼저 처리한 뒤 App을 띄움
   App.xaml.cs                    중복 실행 방지(SingleInstanceGuard), Generic Host, DI, Serilog, 전역 예외 처리(UI 예외 안내 3회, AppDomain 예외는 logs\crash-*.log), WebView2 런타임 확인(없으면 WebView2Bootstrapper로 설치 시도)
+  Services/TrayService           트레이 아이콘(WinForms NotifyIcon, D-18). UseWindowsForms=true는 App.xaml BAML을 빠뜨려 시작 즉시 죽으므로 csproj는 FrameworkReference Microsoft.WindowsDesktop.App으로 WinForms를 가져옴. "닫으면 트레이로"(UI.CloseToTray)면 MainWindow.OnClosing이 숨기기만 하고, 트레이 종료·재시작은 ExitRequested로 구분
   Services/UpdateService         Velopack + GitHub Releases 자동 업데이트(D-17). 설치 버전(IsInstalled)에서만 동작. MainViewModel이 시작 10초 뒤 확인·다운로드 후 배너, 설정 > 정보에서 수동 확인
   Views/MainWindow               FluentWindow + 사이드바 + 배너 + HostArea, 단축키(PreviewKeyDown)
   Views/OAuthPopupWindow         소셜 로그인 팝업(요청 서비스와 같은 프로필)
@@ -95,7 +96,7 @@ src/tests/MoaView.Infrastructure.Tests/   Provider 정책, 저장소·Seed(SQLit
 
 ## 데이터
 
-- 모든 데이터는 `%LOCALAPPDATA%\MoaView\` 아래(`moaview.db`, `WebView2\`, `logs\`, `icons\`). 실행 파일 폴더에 쓰지 않고, 외부로 전송하지 않습니다.
+- 모든 데이터는 `%LOCALAPPDATA%\MoaView\` 아래(`moaview.db`, `WebView2\`, `logs\`, `icons\`). 실행 파일 폴더에 쓰지 않고, 외부로 전송하지 않습니다. "모든 데이터 초기화"는 표식 파일 `reset-all.flag`를 두고 다음 시작 때 `DataReset`이 DB를 열기 전에 지웁니다(로그는 유지).
 - EF Core Code-First 마이그레이션. `DbContext`는 `IDbContextFactory<AppDbContext>`로 주입합니다(WPF ViewModel의 긴 수명 때문). 시각은 UTC ISO-8601 TEXT. 스키마는 [Doc/05_데이터베이스_설계.md](Doc/05_데이터베이스_설계.md).
 - 기본 서비스 5종은 첫 실행 시 Seed. `IsBuiltIn` 서비스는 삭제 불가, 숨김만 가능.
 
@@ -110,6 +111,6 @@ src/tests/MoaView.Infrastructure.Tests/   Provider 정책, 저장소·Seed(SQLit
 - **모든 재생은 앱 안에서만 합니다(D-07).** 외부 브라우저·공식 앱으로 넘기는 "외부 실행" 기능은 없습니다. Netflix 4K는 PlayReady SL3000 하드웨어 DRM이 필요해 WebView2에서는 사실상 불가능하므로, "4K 지원"은 "앱은 4K 렌더링과 하드웨어 디코딩을 제공하고, 실제 화질은 서비스가 허용하는 최대치"로 정의합니다. 재생이 안 되는 서비스는 지원 목록에서 제외합니다.
 - PoC에서 확인된 사실: WebView2에 PlayReady SL3000(하드웨어)과 Widevine L3 CDM이 있고 Netflix·TVING 1080p DRM 재생이 됩니다. DRM 재생 중 서비스 하나가 WebView2 프로세스 약 1 GB를 쓰므로 Suspend와 유지 개수 제한이 필수입니다. 숨겨진(Collapsed) WebView는 페이지 로드가 약 40초 걸리므로 미리 로드는 보이는 상태에서 해야 합니다(R-20). 단축키 입력은 사용자 제스처로 인정되어 `ExecuteScriptAsync`로 PiP를 열 수 있습니다.
 - 치지직은 PC의 Edge·Chrome에서 720p60 이상을 보려면 그리드(브라우저 확장 + 네이버 라이브 스트리밍 커넥터)가 필요하고, 없으면 720p입니다(PoC 실측. 1080p 선택 여부는 미확인). **UA 우회는 불허(D-14)** 이며, 공식 확장을 `AddBrowserExtensionAsync`로 정식 로드하는 방법만 시도하고 안 되면 720p로 봅니다. 상세는 [Doc/03_기술_검토.md](Doc/03_기술_검토.md) 3.1절.
-- 1차는 서비스당 계정 1개만 쓰지만 스키마와 프로필 이름 규칙은 다중 계정을 수용합니다(D-11). 미니 플레이어는 메인 창을 작은 Topmost 창으로 변형하는 방식이고, PIP는 Chromium 내장 PiP를 씁니다(D-12).
+- 서비스당 계정 1개만 씁니다. 다중 계정 전환은 D-18로 제외 확정했고 스키마와 프로필 이름 규칙만 다중 계정을 수용한 채 둡니다(D-11). 미니 플레이어는 메인 창을 작은 Topmost 창으로 변형하는 방식이고, PIP는 Chromium 내장 PiP를 씁니다(D-12).
 - `app.manifest`에 PerMonitorV2 DPI를 선언하고, `--disable-gpu` 같은 브라우저 인자를 쓰지 않습니다.
 - 미결 사항과 결정 기록(D-01~D-15)은 [Doc/08_리스크_및_결정사항.md](Doc/08_리스크_및_결정사항.md)에서 관리합니다. 2026-10-13 기준 미결은 Q-05(추가 서비스, 보류)뿐입니다.

@@ -14,6 +14,7 @@ public partial class MainWindow : FluentWindow
     private readonly MainViewModel _viewModel;
     private readonly WindowService _windowService;
     private readonly ThemeService _theme;
+    private readonly TrayService _tray;
     private readonly IAppSettingsStore _settings;
     private readonly ILogger<MainWindow> _logger;
 
@@ -22,12 +23,14 @@ public partial class MainWindow : FluentWindow
         IServiceHostManager hostManager,
         WindowService windowService,
         ThemeService theme,
+        TrayService tray,
         IAppSettingsStore settings,
         ILogger<MainWindow> logger)
     {
         _viewModel = viewModel;
         _windowService = windowService;
         _theme = theme;
+        _tray = tray;
         _settings = settings;
         _logger = logger;
 
@@ -87,6 +90,7 @@ public partial class MainWindow : FluentWindow
             // 시스템 테마 모드일 때 Windows 테마 변경을 따라가려면 창 핸들이 필요해 Loaded 뒤에 붙인다.
             _theme.AttachWindow(this);
             await _windowService.LoadAsync();
+            await _tray.InitializeAsync(this, () => _viewModel.OpenSettingsCommand.Execute(null));
             await _viewModel.InitializeAsync();
         }
         catch (Exception ex)
@@ -127,6 +131,14 @@ public partial class MainWindow : FluentWindow
         if (_windowService.IsMini)
         {
             _windowService.ExitMini();
+        }
+
+        // FR-NAV-05: 옵션이 켜져 있으면 닫기(X)는 트레이로 숨기기. 트레이 메뉴 "종료"·다시 시작은 ExitRequested로 구분한다.
+        if (_tray.CloseToTray && !_tray.ExitRequested)
+        {
+            e.Cancel = true;
+            _tray.HideToTray();
+            return;
         }
 
         var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;

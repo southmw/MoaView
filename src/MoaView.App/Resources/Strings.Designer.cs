@@ -173,6 +173,12 @@ public static class Strings
     /// <summary>알림 닫기</summary>
     public static string CloseNotification => Get("CloseNotification");
 
+    /// <summary>트레이 아이콘을 클릭하면 창이 다시 나타나고, 우클릭 메뉴에서 종료할 수 있습니다. 숨긴 동안에도 재생은 계속됩니다.</summary>
+    public static string CloseToTrayHint => Get("CloseToTrayHint");
+
+    /// <summary>닫기(X)를 누르면 종료하지 않고 트레이로 보냄</summary>
+    public static string CloseToTrayOption => Get("CloseToTrayOption");
+
     /// <summary>연결할 수 없습니다</summary>
     public static string ConnectionFailed => Get("ConnectionFailed");
 
@@ -431,6 +437,18 @@ public static class Strings
     /// <summary>모든 서비스의 로그인 세션(쿠키)과 캐시를 지웁니다. 저장된 계정과 설정은 남습니다. 브라우저 데이터는 실행 중에 지울 수 없어 앱을 다시 시작할 때 지워집니다. 지금 다시 ...</summary>
     public static string ResetAllConfirm => Get("ResetAllConfirm");
 
+    /// <summary>모든 데이터 초기화 (처음 상태로)</summary>
+    public static string ResetAllDataButton => Get("ResetAllDataButton");
+
+    /// <summary>서비스 목록·설정·저장된 계정·쿠키·캐시·아이콘을 모두 지우고 처음 상태로 돌립니다. 되돌릴 수 없습니다. 실행 중에는 지울 수 없어 앱을 다시 시작할 때 지워집니다. 지금 ...</summary>
+    public static string ResetAllDataConfirm => Get("ResetAllDataConfirm");
+
+    /// <summary>다음에 앱을 시작할 때 모든 데이터를 지우고 처음 상태로 돌립니다.</summary>
+    public static string ResetAllDataScheduled => Get("ResetAllDataScheduled");
+
+    /// <summary>모든 데이터 초기화</summary>
+    public static string ResetAllDataTitle => Get("ResetAllDataTitle");
+
     /// <summary>모든 서비스 데이터 초기화 (쿠키·캐시)</summary>
     public static string ResetAllServiceData => Get("ResetAllServiceData");
 
@@ -497,7 +515,7 @@ public static class Strings
     /// <summary>'{0}' 서비스를 저장했습니다. 열려 있던 화면은 다시 엽니다.</summary>
     public static string ServiceSaved => Get("ServiceSaved");
 
-    /// <summary>기본 제공 서비스는 삭제할 수 없고 '표시'를 끄면 사이드바에서 숨겨집니다. 배율은 Ctrl + / Ctrl - 로 바꾸면 서비스별로 저장됩니다. 순서는 사이드바와 Ctrl+...</summary>
+    /// <summary>행을 끌어서 놓거나 위로/아래로 버튼으로 순서를 바꿉니다. 기본 제공 서비스는 삭제할 수 없고 '표시'를 끄면 사이드바에서 숨겨집니다. 배율은 Ctrl + / Ctrl - 로...</summary>
     public static string ServicesHint => Get("ServicesHint");
 
     /// <summary>기본으로</summary>
@@ -595,6 +613,12 @@ public static class Strings
 
     /// <summary>Windows 설정 따름</summary>
     public static string ThemeSystem => Get("ThemeSystem");
+
+    /// <summary>종료</summary>
+    public static string TrayExit => Get("TrayExit");
+
+    /// <summary>열기</summary>
+    public static string TrayOpen => Get("TrayOpen");
 
     /// <summary>예기치 않은 오류가 발생했습니다. 계속 사용할 수 있지만 문제가 반복되면 앱을 다시 시작하세요.  {0}: {1}  로그: {2}{3}</summary>
     public static string UnhandledErrorMessage => Get("UnhandledErrorMessage");

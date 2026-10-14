@@ -43,6 +43,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IDatabaseMaintenance _maintenance;
     private readonly FaviconCache _favicons;
     private readonly UpdateService _updates;
+    private readonly TrayService _tray;
     private readonly ILogger<SettingsViewModel> _logger;
 
     private bool _loaded;
@@ -59,10 +60,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         IDatabaseMaintenance maintenance,
         FaviconCache favicons,
         UpdateService updates,
+        TrayService tray,
         ILogger<SettingsViewModel> logger)
     {
         _favicons = favicons;
         _updates = updates;
+        _tray = tray;
         UpdateStatus = _updates.IsInstalled
             ? (_updates.ReadyVersion is { } ready ? string.Format(Strings.UpdateDownloaded, ready) : Strings.UpdateCheckIdle)
             : Strings.UpdateNotInstalled;
@@ -245,6 +248,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         StartupService = StartupCandidates.FirstOrDefault(c => c.Id == fixedId) ?? StartupCandidates.FirstOrDefault();
 
         SelectedTheme = ThemeOptions.FirstOrDefault(t => t.Code == _theme.Current) ?? ThemeOptions[0];
+        CloseToTray = _tray.CloseToTray;
 
         SuspendAfterSeconds = await _settings.GetAsync(SettingKeys.SuspendAfterSeconds, _playerOptions.Value.SuspendAfterSeconds);
         MaxAliveHosts = await _settings.GetAsync(SettingKeys.MaxAliveHosts, _playerOptions.Value.MaxAliveHosts);
@@ -333,6 +337,18 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (_loaded && value is not null)
         {
             _ = _theme.SetAsync(value.Code);
+        }
+    }
+
+    /// <summary>FR-NAV-05: 닫기(X)를 트레이로 숨기기로 처리.</summary>
+    [ObservableProperty]
+    public partial bool CloseToTray { get; set; }
+
+    partial void OnCloseToTrayChanged(bool value)
+    {
+        if (_loaded)
+        {
+            _ = _tray.SetCloseToTrayAsync(value);
         }
     }
 
@@ -435,16 +451,15 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanMoveDown))]
     private Task MoveDownAsync() => MoveAsync(+1);
 
-    private async Task MoveAsync(int delta)
-    {
-        if (SelectedService is not { } row)
-        {
-            return;
-        }
+    private Task MoveAsync(int delta) =>
+        SelectedService is { } row ? MoveToAsync(row, Services.IndexOf(row) + delta) : Task.CompletedTask;
 
+    /// <summary>행을 targetIndex 위치로 옮기고 순서를 저장한다(FR-SVC-04). 드래그 정렬과 위/아래 버튼이 함께 쓴다.</summary>
+    public async Task MoveToAsync(ServiceRowViewModel row, int targetIndex)
+    {
         var index = Services.IndexOf(row);
-        var target = index + delta;
-        if (index < 0 || target < 0 || target >= Services.Count)
+        var target = Math.Clamp(targetIndex, 0, Services.Count - 1);
+        if (index < 0 || target == index)
         {
             return;
         }
@@ -592,6 +607,37 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
 
         DataStatus = Strings.ResetScheduled;
+    }
+
+    /// <summary>D-18: DB·브라우저 데이터·아이콘을 모두 지워 처음 상태로. 실행 중에는 잠겨 있어 표식 파일을 두고 다음 시작 때 지운다.</summary>
+    [RelayCommand]
+    private async Task ResetAllDataAsync()
+    {
+        var box = new Wpf.Ui.Controls.MessageBox
+        {
+            Title = Strings.ResetAllDataTitle,
+            Content = Strings.ResetAllDataConfirm,
+            PrimaryButtonText = Strings.RestartNow,
+            PrimaryButtonAppearance = Wpf.Ui.Controls.ControlAppearance.Danger,
+            SecondaryButtonText = Strings.NextLaunch,
+            CloseButtonText = Strings.Cancel,
+        };
+        var result = await box.ShowDialogAsync();
+        if (result == Wpf.Ui.Controls.MessageBoxResult.None)
+        {
+            return;
+        }
+
+        DataReset.Schedule(_paths);
+        _logger.LogWarning("모든 데이터 초기화 예약(다음 시작 때): {Marker}", _paths.ResetMarkerFile);
+        if (result == Wpf.Ui.Controls.MessageBoxResult.Primary)
+        {
+            RestartRequested = true;
+            Application.Current.Windows.OfType<SettingsWindow>().FirstOrDefault()?.Close();
+            return;
+        }
+
+        DataStatus = Strings.ResetAllDataScheduled;
     }
 
     private void OpenFolder(string path)

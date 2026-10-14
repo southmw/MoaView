@@ -23,6 +23,9 @@ public static class SettingKeys
 
     public const string SidebarCollapsed = "UI.SidebarCollapsed";
 
+    /// <summary>true면 닫기(X)가 종료 대신 트레이로 숨긴다(FR-NAV-05). 기본 false.</summary>
+    public const string CloseToTray = "UI.CloseToTray";
+
     public const string SuspendAfterSeconds = "Player.SuspendAfterSeconds";
 
     public const string MaxAliveHosts = "Player.MaxAliveHosts";
