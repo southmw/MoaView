@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- WPF 실행 프로젝트(04 아키텍처 2절). Generic Host로 DI와 Serilog를 구성한다. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(WindowsTargetFramework)</TargetFramework>
+    <SupportedOSPlatformVersion>$(WindowsMinimumVersion)</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>MoaView.App</RootNamespace>
+    <AssemblyName>MoaView</AssemblyName>
+    <!-- 앱 아이콘(Assets/moaview.ico): 사이드바 타일 3개 + 재생 삼각형. 서비스 로고는 쓰지 않는다(D-08) -->
+    <ApplicationIcon>Assets\moaview.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MoaView.Core\MoaView.Core.csproj" />
+    <ProjectReference Include="..\MoaView.Infrastructure\MoaView.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <!-- dotnet ef migrations의 시작 프로젝트로 쓰기 위해 필요(런타임에는 포함되지 않음) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- 주입 스크립트는 포함 리소스로 싣는다(ScriptLoader) -->
+    <EmbeddedResource Include="Scripts\*.js" />
+    <Resource Include="Assets\moaview.ico" />
+    <Resource Include="Assets\moaview.png" />
+  </ItemGroup>
+
+</Project>

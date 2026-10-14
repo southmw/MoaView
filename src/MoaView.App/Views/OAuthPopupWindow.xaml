@@ -1,0 +1,22 @@
+<ui:FluentWindow x:Class="MoaView.App.Views.OAuthPopupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="로그인"
+        Width="520" Height="680"
+        MinWidth="360" MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar x:Name="TitleBar" Grid.Row="0" Title="로그인" ShowMaximize="False" ShowMinimize="False" />
+
+        <wv2:WebView2 x:Name="PopupView" Grid.Row="1" />
+    </Grid>
+</ui:FluentWindow>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 순수 .NET 라이브러리. UI와 DB, WebView2를 모른다(04 아키텍처 3절). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MoaView.Core</RootNamespace>
+  </PropertyGroup>
+
+</Project>

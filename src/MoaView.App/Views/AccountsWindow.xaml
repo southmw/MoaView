@@ -1,0 +1,75 @@
+<ui:FluentWindow x:Class="MoaView.App.Views.AccountsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:vm="clr-namespace:MoaView.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:AccountsViewModel}"
+        Title="{Binding Title}"
+        Width="760" Height="440"
+        MinWidth="560" MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        ExtendsContentIntoTitleBar="True"
+        WindowBackdropType="Mica">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="{Binding Title}" ShowMaximize="False" ShowMinimize="False" />
+
+        <Grid Grid.Row="1" Margin="16,8,16,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ListView Grid.Column="0" ItemsSource="{Binding Accounts}" SelectedItem="{Binding Selected}"
+                      SelectionMode="Single" AutomationProperties.Name="계정 목록">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="기본" Width="48">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="●" HorizontalAlignment="Center"
+                                               Visibility="{Binding IsDefault, Converter={StaticResource BoolToVisibility}}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="표시 이름" Width="130" DisplayMemberBinding="{Binding DisplayName}" />
+                        <GridViewColumn Header="아이디" Width="180" DisplayMemberBinding="{Binding LoginId}" />
+                        <GridViewColumn Header="로그인 방식" Width="90" DisplayMemberBinding="{Binding LoginProviderText}" />
+                        <GridViewColumn Header="자동 로그인" Width="90" DisplayMemberBinding="{Binding AutoText}" />
+                        <GridViewColumn Header="마지막 로그인" Width="120" DisplayMemberBinding="{Binding LastLoginText}" />
+                        <GridViewColumn Header="실패" Width="50" DisplayMemberBinding="{Binding FailText}" />
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+            <StackPanel Grid.Column="1" Margin="12,0,0,0" Width="120">
+                <StackPanel.Resources>
+                    <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                        <Setter Property="Margin" Value="0,0,0,8" />
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    </Style>
+                </StackPanel.Resources>
+                <ui:Button Content="추가" Command="{Binding AddCommand}" Appearance="Primary" />
+                <ui:Button Content="수정" Command="{Binding EditCommand}" CommandParameter="{Binding Selected}" />
+                <ui:Button Content="기본으로" Command="{Binding SetDefaultCommand}" CommandParameter="{Binding Selected}" />
+                <ui:Button Content="삭제" Command="{Binding DeleteCommand}" CommandParameter="{Binding Selected}" Appearance="Danger" />
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="2" Padding="16,8" Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+            <StackPanel>
+                <TextBlock Text="{Binding Status}" FontSize="12" />
+                <TextBlock FontSize="12" Opacity="0.7" TextWrapping="Wrap"
+                           Text="비밀번호는 Windows 계정으로 암호화되어 이 PC에만 저장됩니다. 로그인 페이지가 뜨면 기본 계정으로 자동 입력하고, 자동 제출은 계정별로 켤 수 있습니다(연속 2회 실패 시 자동으로 꺼짐)." />
+            </StackPanel>
+        </Border>
+    </Grid>
+</ui:FluentWindow>

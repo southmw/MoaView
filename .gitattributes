@@ -1,0 +1,13 @@
+# 줄 끝은 저장소에서 LF로 정규화하고, 체크아웃은 OS 기본을 따른다.
+* text=auto
+
+# Windows 전용 파일은 CRLF 유지
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# 바이너리
+*.ico binary
+*.png binary
+*.jpg binary
+*.db binary

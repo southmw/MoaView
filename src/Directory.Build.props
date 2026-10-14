@@ -1,0 +1,23 @@
+<Project>
+
+  <!-- 솔루션 공통 설정. 각 프로젝트는 TargetFramework와 패키지만 선언한다. -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Version>0.1.0</Version>
+    <Company>MoaView</Company>
+    <Product>MoaView</Product>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>ko;en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!-- 공통 버전: Windows 전용 프로젝트는 WebView2CompositionControl 때문에 Windows SDK 프로젝션이 필요하다(09 PoC 결과). -->
+  <PropertyGroup>
+    <WindowsTargetFramework>net10.0-windows10.0.19041.0</WindowsTargetFramework>
+    <WindowsMinimumVersion>10.0.17763.0</WindowsMinimumVersion>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/app/">
+    <Project Path="MoaView.App/MoaView.App.csproj" />
+    <Project Path="MoaView.Core/MoaView.Core.csproj" />
+    <Project Path="MoaView.Infrastructure/MoaView.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MoaView.Core.Tests/MoaView.Core.Tests.csproj" />
+    <Project Path="tests/MoaView.Infrastructure.Tests/MoaView.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

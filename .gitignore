@@ -1,0 +1,36 @@
+# .NET 빌드 산출물
+bin/
+obj/
+*.binlog
+TestResults/
+artifacts/
+
+# IDE·도구
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.swp
+*.DotSettings.user
+.claude/settings.local.json
+
+# 패키지·배포
+*.nupkg
+*.snupkg
+publish/
+Releases/
+
+# 로컬 환경
+*.log
+*.db
+*.db-shm
+*.db-wal
+appsettings.*.local.json
+.env
+.env.*
+
+# 운영체제
+Thumbs.db
+Desktop.ini
+.DS_Store
